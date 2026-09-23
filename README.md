@@ -11,6 +11,31 @@ modelo externo ni dependencia fuera de la biblioteca estándar de Python.
 
 ---
 
+## TL;DR — qué es real, qué es simulado y qué fuentes usamos
+
+**Qué funciona de verdad.** El motor (`solver_match_crit.py`) es código real,
+determinista y autocontenido (solo biblioteca estándar de Python). No es un plan
+precalculado ni un script que devuelva valores fijos: en cada tic del simulador
+recibe el estado completo, resuelve un emparejamiento de coste mínimo y devuelve
+las asignaciones de ese instante. Es reproducible — la misma entrada produce
+siempre la misma salida — y nada está inventado ni ajustado a mano por escenario.
+
+**Qué está simulado.** Los *resultados* (el porcentaje de comida salvada) se miden
+sobre el simulador de eventos discretos del reto, no sobre entregas reales de
+comida. El escenario publicado (`sample_01`) y los 2000 escenarios de validación
+provienen del generador oficial del reto (`generar_escenario.py`, determinista y
+con semilla fija). El 55.4% del escenario publicado es la salida real de ese
+simulador ejecutando nuestro motor, reproducible con el comando de la sección
+*Ejecución*.
+
+**Qué fuentes usamos.** Ninguna teórica — ni papers ni fórmulas tomadas de la
+literatura. Toda la calibración (los tres factores del peso y sus valores) es
+**pura empiria**: cada parámetro se fijó midiendo su efecto sobre el simulador y
+descartando los que no aportaban. `docs/METODOLOGIA.md` registra qué se probó,
+qué se refutó y con qué evidencia.
+
+---
+
 ## El problema
 
 - **11 voluntarios**, cada uno con posición inicial (su casa), una ventana de 2 h,
