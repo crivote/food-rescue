@@ -34,6 +34,14 @@ literatura. Toda la calibración (los tres factores del peso y sus valores) es
 descartando los que no aportaban. `docs/METODOLOGIA.md` registra qué se probó,
 qué se refutó y con qué evidencia.
 
+**La salvedad de los datos.** Las fuentes abiertas del reto (OpenStreetMap,
+FAO, Eurostat, ReFED, FESBAL, portales municipales) sirven para *dimensionar* el
+problema, no para *decidir* en tiempo real: no existe hoy una API donde
+supermercados, voluntarios y centros publiquen su estado en vivo. El motor se
+alimenta del generador determinista del reto; la capa de datos es intercambiable
+solo si existiera ese feed, que es el punto de partida de la visión de producto
+de la sección siguiente.
+
 ---
 
 ## El problema
@@ -158,6 +166,29 @@ techo_realista.py               ← umbral máximo por grafo de itinerarios (LP)
 optimo_exacto.py                ← óptimo entero de un escenario (CP-SAT)
 valida_beta_14.py               ← validación por pares del parámetro BETA
 ```
+
+## Visión de producto — del simulador al sistema real
+
+Este repositorio es el **motor de decisión**, no el sistema completo. El paso a
+producción pasa por una pieza que hoy no existe y que habría que diseñar: una
+**API abierta** y una arquitectura cloud donde los tres tipos de actor publican y
+consumen su estado en tiempo real, **sin compromiso**, bien mediante una app
+interactiva o mediante integraciones automatizadas con sus sistemas de
+información.
+
+- **Oferentes de excedente** — restaurantes, hoteles, comedores de universidades
+  y colegios, intermediarios de alimentación, hipermercados, supermercados.
+  Publican *qué* les sobra, *cuándo* caduca y *dónde* está.
+- **Voluntarios** — colaboran recogiendo y transportando. Para sostener la
+  participación se propone un sistema **gamificado de puntos y recompensas**
+  (virtuales y, si se logra patrocinio de una fundación o entidad con interés en
+  posicionar su imagen corporativa en recuperación de alimentos, reales).
+- **Puntos de recogida y almacenamiento del tercer sector** — bancos de
+  alimentos — con capacidad y horario en vivo.
+
+El motor de este repositorio es directamente reutilizable como el núcleo de
+decisión de ese sistema: la interfaz `decidir(estado)` no cambia; solo cambia
+quién produce el `estado` (el simulador, o la API en tiempo real del sistema).
 
 ## Licencia
 
