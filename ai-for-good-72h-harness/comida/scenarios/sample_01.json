@@ -1,0 +1,634 @@
+{
+  "nombre": "sample_01",
+  "semilla": 1,
+  "ciudad": "Madrid (sintética sobre coordenadas reales)",
+  "bbox": {
+    "lat_min": 40.33,
+    "lat_max": 40.51,
+    "lon_min": -3.82,
+    "lon_max": -3.58
+  },
+  "apertura_min": 1140,
+  "cierre_min": 1350,
+  "recogidas": [
+    {
+      "id": "r00",
+      "pos": [
+        40.48254,
+        -3.63669
+      ],
+      "comidas": 15,
+      "listo_min": 1140,
+      "caduca_min": 1187
+    },
+    {
+      "id": "r01",
+      "pos": [
+        40.46697,
+        -3.70666
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1185
+    },
+    {
+      "id": "r02",
+      "pos": [
+        40.34689,
+        -3.8132
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1254
+    },
+    {
+      "id": "r03",
+      "pos": [
+        40.46721,
+        -3.81949
+      ],
+      "comidas": 25,
+      "listo_min": 1140,
+      "caduca_min": 1213
+    },
+    {
+      "id": "r04",
+      "pos": [
+        40.47433,
+        -3.67812
+      ],
+      "comidas": 8,
+      "listo_min": 1140,
+      "caduca_min": 1198
+    },
+    {
+      "id": "r05",
+      "pos": [
+        40.33551,
+        -3.81389
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1275
+    },
+    {
+      "id": "r06",
+      "pos": [
+        40.48862,
+        -3.65524
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1167
+    },
+    {
+      "id": "r07",
+      "pos": [
+        40.42497,
+        -3.63671
+      ],
+      "comidas": 25,
+      "listo_min": 1140,
+      "caduca_min": 1245
+    },
+    {
+      "id": "r08",
+      "pos": [
+        40.39223,
+        -3.65756
+      ],
+      "comidas": 25,
+      "listo_min": 1140,
+      "caduca_min": 1225
+    },
+    {
+      "id": "r09",
+      "pos": [
+        40.49677,
+        -3.72012
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1289
+    },
+    {
+      "id": "r10",
+      "pos": [
+        40.348,
+        -3.66896
+      ],
+      "comidas": 15,
+      "listo_min": 1140,
+      "caduca_min": 1280
+    },
+    {
+      "id": "r11",
+      "pos": [
+        40.38989,
+        -3.64684
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1186
+    },
+    {
+      "id": "r12",
+      "pos": [
+        40.40598,
+        -3.62079
+      ],
+      "comidas": 12,
+      "listo_min": 1140,
+      "caduca_min": 1284
+    },
+    {
+      "id": "r13",
+      "pos": [
+        40.43576,
+        -3.60821
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1201
+    },
+    {
+      "id": "r14",
+      "pos": [
+        40.48359,
+        -3.70475
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1209
+    },
+    {
+      "id": "r15",
+      "pos": [
+        40.36114,
+        -3.68829
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1211
+    },
+    {
+      "id": "r16",
+      "pos": [
+        40.44948,
+        -3.7941
+      ],
+      "comidas": 10,
+      "listo_min": 1140,
+      "caduca_min": 1182
+    },
+    {
+      "id": "r17",
+      "pos": [
+        40.40079,
+        -3.70247
+      ],
+      "comidas": 6,
+      "listo_min": 1140,
+      "caduca_min": 1222
+    },
+    {
+      "id": "r18",
+      "pos": [
+        40.38554,
+        -3.61641
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1216
+    },
+    {
+      "id": "r19",
+      "pos": [
+        40.36035,
+        -3.76554
+      ],
+      "comidas": 6,
+      "listo_min": 1140,
+      "caduca_min": 1235
+    },
+    {
+      "id": "r20",
+      "pos": [
+        40.42713,
+        -3.61353
+      ],
+      "comidas": 12,
+      "listo_min": 1140,
+      "caduca_min": 1252
+    },
+    {
+      "id": "r21",
+      "pos": [
+        40.39189,
+        -3.61661
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1210
+    },
+    {
+      "id": "r22",
+      "pos": [
+        40.37847,
+        -3.68848
+      ],
+      "comidas": 6,
+      "listo_min": 1140,
+      "caduca_min": 1215
+    },
+    {
+      "id": "r23",
+      "pos": [
+        40.48425,
+        -3.59088
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1208
+    },
+    {
+      "id": "r24",
+      "pos": [
+        40.42336,
+        -3.68527
+      ],
+      "comidas": 20,
+      "listo_min": 1140,
+      "caduca_min": 1258
+    },
+    {
+      "id": "r25",
+      "pos": [
+        40.4166,
+        -3.73246
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1288
+    },
+    {
+      "id": "r26",
+      "pos": [
+        40.42085,
+        -3.70362
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1193
+    },
+    {
+      "id": "r27",
+      "pos": [
+        40.33029,
+        -3.69037
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1211
+    },
+    {
+      "id": "r28",
+      "pos": [
+        40.33504,
+        -3.76489
+      ],
+      "comidas": 10,
+      "listo_min": 1140,
+      "caduca_min": 1215
+    },
+    {
+      "id": "r29",
+      "pos": [
+        40.36254,
+        -3.79802
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1225
+    },
+    {
+      "id": "r30",
+      "pos": [
+        40.47696,
+        -3.75873
+      ],
+      "comidas": 8,
+      "listo_min": 1140,
+      "caduca_min": 1256
+    },
+    {
+      "id": "r31",
+      "pos": [
+        40.333,
+        -3.81651
+      ],
+      "comidas": 15,
+      "listo_min": 1140,
+      "caduca_min": 1181
+    },
+    {
+      "id": "r32",
+      "pos": [
+        40.34971,
+        -3.67005
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1197
+    },
+    {
+      "id": "r33",
+      "pos": [
+        40.36014,
+        -3.75875
+      ],
+      "comidas": 10,
+      "listo_min": 1140,
+      "caduca_min": 1200
+    },
+    {
+      "id": "r34",
+      "pos": [
+        40.44668,
+        -3.74932
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1237
+    },
+    {
+      "id": "r35",
+      "pos": [
+        40.35055,
+        -3.74512
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1219
+    },
+    {
+      "id": "r36",
+      "pos": [
+        40.36385,
+        -3.7939
+      ],
+      "comidas": 30,
+      "listo_min": 1140,
+      "caduca_min": 1212
+    },
+    {
+      "id": "r37",
+      "pos": [
+        40.5038,
+        -3.7164
+      ],
+      "comidas": 6,
+      "listo_min": 1140,
+      "caduca_min": 1298
+    },
+    {
+      "id": "r38",
+      "pos": [
+        40.40152,
+        -3.81152
+      ],
+      "comidas": 10,
+      "listo_min": 1140,
+      "caduca_min": 1195
+    },
+    {
+      "id": "r39",
+      "pos": [
+        40.42114,
+        -3.7176
+      ],
+      "comidas": 12,
+      "listo_min": 1140,
+      "caduca_min": 1214
+    },
+    {
+      "id": "r40",
+      "pos": [
+        40.44354,
+        -3.65319
+      ],
+      "comidas": 25,
+      "listo_min": 1140,
+      "caduca_min": 1298
+    },
+    {
+      "id": "r41",
+      "pos": [
+        40.44673,
+        -3.72522
+      ],
+      "comidas": 18,
+      "listo_min": 1140,
+      "caduca_min": 1195
+    },
+    {
+      "id": "r42",
+      "pos": [
+        40.40673,
+        -3.64301
+      ],
+      "comidas": 10,
+      "listo_min": 1140,
+      "caduca_min": 1237
+    }
+  ],
+  "voluntarios": [
+    {
+      "id": "v00",
+      "pos": [
+        40.4876,
+        -3.74647
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 9,
+      "capacidad": 25
+    },
+    {
+      "id": "v01",
+      "pos": [
+        40.46389,
+        -3.72012
+      ],
+      "desde_min": 1155,
+      "hasta_min": 1275,
+      "velocidad_kmh": 13,
+      "capacidad": 20
+    },
+    {
+      "id": "v02",
+      "pos": [
+        40.43093,
+        -3.61587
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 11,
+      "capacidad": 30
+    },
+    {
+      "id": "v03",
+      "pos": [
+        40.47902,
+        -3.61123
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 9,
+      "capacidad": 30
+    },
+    {
+      "id": "v04",
+      "pos": [
+        40.39245,
+        -3.77062
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 15,
+      "capacidad": 20
+    },
+    {
+      "id": "v05",
+      "pos": [
+        40.3488,
+        -3.66017
+      ],
+      "desde_min": 1170,
+      "hasta_min": 1290,
+      "velocidad_kmh": 13,
+      "capacidad": 30
+    },
+    {
+      "id": "v06",
+      "pos": [
+        40.38856,
+        -3.61081
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 13,
+      "capacidad": 15
+    },
+    {
+      "id": "v07",
+      "pos": [
+        40.36615,
+        -3.74134
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 11,
+      "capacidad": 25
+    },
+    {
+      "id": "v08",
+      "pos": [
+        40.36835,
+        -3.65813
+      ],
+      "desde_min": 1170,
+      "hasta_min": 1290,
+      "velocidad_kmh": 15,
+      "capacidad": 25
+    },
+    {
+      "id": "v09",
+      "pos": [
+        40.46823,
+        -3.6922
+      ],
+      "desde_min": 1170,
+      "hasta_min": 1290,
+      "velocidad_kmh": 9,
+      "capacidad": 15
+    },
+    {
+      "id": "v10",
+      "pos": [
+        40.35394,
+        -3.78003
+      ],
+      "desde_min": 1140,
+      "hasta_min": 1260,
+      "velocidad_kmh": 11,
+      "capacidad": 25
+    }
+  ],
+  "centros": [
+    {
+      "id": "c0",
+      "pos": [
+        40.46664,
+        -3.67595
+      ],
+      "cierra_min": 1260,
+      "capacidad": 200
+    },
+    {
+      "id": "c1",
+      "pos": [
+        40.4814,
+        -3.73165
+      ],
+      "cierra_min": 1260,
+      "capacidad": 200
+    },
+    {
+      "id": "c2",
+      "pos": [
+        40.39125,
+        -3.75011
+      ],
+      "cierra_min": 1260,
+      "capacidad": 200
+    },
+    {
+      "id": "c3",
+      "pos": [
+        40.48614,
+        -3.67504
+      ],
+      "cierra_min": 1320,
+      "capacidad": 200
+    },
+    {
+      "id": "c4",
+      "pos": [
+        40.50178,
+        -3.60706
+      ],
+      "cierra_min": 1320,
+      "capacidad": 200
+    },
+    {
+      "id": "c5",
+      "pos": [
+        40.35436,
+        -3.68772
+      ],
+      "cierra_min": 1320,
+      "capacidad": 200
+    }
+  ],
+  "cancelaciones": [
+    {
+      "min": 1180,
+      "voluntario": "v02"
+    },
+    {
+      "min": 1180,
+      "voluntario": "v07"
+    }
+  ]
+}
