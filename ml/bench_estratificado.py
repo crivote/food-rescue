@@ -53,7 +53,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("n", type=int, nargs="?", default=1200)
     p.add_argument("ini", type=int, nargs="?", default=5001)
-    p.add_argument("--modelo", default="/tmp/scorer_variantes/scorer_binario.txt")
+    p.add_argument("--modelo", default="models/scorer_full.txt")
     a = p.parse_args()
 
     semillas = _out_of_sample_range(a.ini, a.n)

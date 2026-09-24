@@ -173,15 +173,27 @@ la sección anterior corresponden al motor determinista ya consolidado.
 El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), sección 7.
 
-> **Reproducir los números del scorer.** Las cifras de la tabla anterior
-> (Q1=+0.61 … Q4=+0.82) proceden de un modelo entrenado sobre 600 escenarios
-> OPTIMAL (semillas 20300–20899), validado contra 1200 escenarios fuera de
-> muestra (5001–6200). El modelo (2.7 MB) y los planes CP-SAT (665 KB) son
-> artefactos regenerables, no versionados: ejecuta `bash ml/build_scorer.sh`
-> (~2 h de CPU en 4 cores) para obtenerlos desde cero. Los scripts están
-> diseñados para correr en CPU y son deterministas (semillas explícitas).
-> Mientras el modelo no exista, `ml/solver_scorer.py` cae al fallback `[]`
-> (silencioso); el orquestador debe comprobar la disponibilidad del modelo.
+> **Artefactos del scorer versionados.** El modelo entrenado
+> (`models/scorer_full.txt`, 2.7 MB) y los planes CP-SAT que sirvieron como
+> profesor (`labels/planes.jsonl`, 600 escenarios OPTIMAL, 665 KB) **están
+> commiteados** en este repo: son la fuente de verdad del behavioral cloning.
+> El `python3 ml/solver_scorer.py` los usa directamente; solo necesita
+> `lightgbm` (el motor `solver_match_crit.py`, que es la entrega principal,
+> sigue siendo stdlib puro). Si quieres re-entrenar (más semillas, otras
+> features, validar reproducibilidad), ejecuta `bash ml/build_scorer.sh`
+> (~4 h en CPU 16 cores, ~2 h en 4 cores; necesita además `ortools`).
+
+## Requisitos e instalación
+
+| Componente | Dependencias | Notas |
+|---|---|---|
+| `solver_match_crit.py` (motor, la entrega) | **solo stdlib** | Sin pip install. Reproduce 55.4% en `sample_01`. |
+| `explicar_decision.py` | stdlib + acceso HTTP opcional | LLM opcional vía env (`LLM_ENDPOINT`/`LLM_MODEL`/`LLM_API_KEY`); sin esas vars usa plantilla determinista. |
+| `ml/solver_scorer.py` (scorer en runtime) | `lightgbm` | Lazy import dentro de `cargar_modelo()`; el modelo se carga desde `models/scorer_full.txt` (versionado). |
+| `optimo_exacto.py` (techo de referencia) | `ortools` | Solo si quieres re-ejecutar el solver exacto. |
+| `ml/etiquetar_cpsat.py` + `ml/entrenar_variantes.py` (re-generar scorer) | `ortools` + `lightgbm` + `numpy` | Solo si corres `ml/build_scorer.sh`. |
+
+Si clonas y solo quieres ejecutar el motor: `python3 solver_match_crit.py` corre sin instalación. Para el scorer en runtime: `pip install lightgbm` y luego `python3 ml/solver_scorer.py`.
 
 ## Ejecución
 
@@ -230,6 +242,11 @@ ml/                             ← capa de IA (aprendizaje por imitación)
     entrenar_variantes.py       ← entrena el scorer (LightGBM LambdaRank)
     solver_scorer.py            ← motor online con el scorer aprendido
     bench_estratificado.py      ← motor vs scorer fuera de muestra, por cuartiles
+    build_scorer.sh             ← regenera labels/planes.jsonl + models/scorer_full.txt (~4h CPU)
+labels/                         ← planes CP-SAT versionados (600 escenarios, fuente de verdad del behavioural cloning)
+    planes.jsonl                ← 572 OPTIMAL + 28 FEASIBLE, ~665 KB
+models/                         ← modelos LightGBM versionados
+    scorer_full.txt             ← 2.7 MB, LambdaRank (binario, 25 features)
 explicar_decision.py            ← traduce una decisión a lenguaje natural (LLM)
 ux/index.html                   ← prototipo de app de voluntario (sin build)
 ```
