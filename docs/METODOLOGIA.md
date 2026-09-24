@@ -307,6 +307,65 @@ oportunidad del portador no se captura con penalizaciones locales; exige ver el
 futuro (lookahead global), que es exactamente lo que intenta el método de IA de
 la sección 7.
 
+### 4.4 Lookahead heurístico de 2–3 turnos sobre el motor (explorado y refutado)
+
+La sección 4.3 dejó abierta una pregunta natural: si el matcher es miope
+*entre* tics (cada tic re-resuelve sin memoria del acoplamiento secuencial),
+¿por qué no darle una **mirada hacia delante**? La idea, en su formulación más
+barata, no es enumerar matchings alternativos (prohibitivo), sino un **detector
+de pérdida irremediable**: simular el dispatch del motor y los `K` tics
+siguientes, detectar si alguna recogida que caduca dentro del horizonte queda
+sin rescatar, y —si es así— **dar un peso extra** a esa recogida para que el
+matching del tic actual la priorice (en lugar de quemar al voluntario que la
+podía alcanzar).
+
+Es la palanca que faltaba por probar en la familia "mirar el futuro", y la
+última candidata a cerrar el gap secuencial sin IA.
+
+**Diseño testeado** (`solver_lookahead.py`, en el repositorio principal):
+
+1. `D = motor(estado)` — dispatch completo del tic (no arista a arista).
+2. *Rollout determinista*: clon del simulador, aplicar `D`, avanzar `K` tics más
+   con el propio motor como solver interno (cacheado por tic, determinista).
+3. *Detección*: recogidas pendientes con `caduca_min ≤ t + (K+1)·5` que el
+   rollout **no** rescató.
+4. *Intervención (rama A)*: re-resolver el matching del tic con un factor
+   multiplicativo `BOOST` sobre las aristas hacia esas recogidas en peligro.
+
+Se barrió `K ∈ {1,2,3}` y `BOOST ∈ {1.5, 2.0, 3.0}` sobre **50 escenarios fuera
+de muestra** (semillas 5001–5050).
+
+**Resultado** (media de `porcentaje_salvado`; motor de referencia 55.76%):
+
+| Configuración | Media | Δ vs motor | Gana |
+|---|---|---|---|
+| K=1 · BOOST 1.5/2.0/3.0 | 55.78% | +0.02 | 1/50 |
+| K=2 · BOOST 1.5 | 55.80% | +0.03 | 2/50 |
+| K=2 · BOOST 2.0 | 55.76% | −0.01 | 3/50 |
+| K=2 · BOOST 3.0 | 55.72% | −0.05 | 3/50 |
+| K=3 · BOOST 1.5 | 55.85% | +0.09 | 6/50 |
+| K=3 · BOOST 2.0 | 55.65% | −0.11 | 7/50 |
+| K=3 · BOOST 3.0 | 55.52% | −0.24 | 7/50 |
+
+**Conclusión: refutado.** Todos los deltas están dentro del ruido (el mejor,
++0.09 en K=3/BOOST=1.5, es indistinguible de cero), y la dirección se vuelve
+**negativa** conforme sube el `BOOST` (en `BOOST=3.0` empeora −0.05 y −0.24).
+Es la misma firma que la reserva de portador (4.3): dar peso extra a ciegas
+resta. El detector apenas dispara (el boost cambia el resultado en 1–7 de cada
+50 escenarios), lo que confirma que la señal "esta recogida se pierde sin
+remedio en 2 tics" no aparece con la frecuencia ni la fuerza que exigiría para
+aportar.
+
+**Lectura estructural.** Esto cierra la familia de heurísticas deterministas
+"mirar hacia delante" —reserva de capacidad (4.3), rebalanceo de desierto y
+cercanía (4.1), modulación por escenario (4.1) y ahora lookahead (4.4)— con el
+mismo resultado: el coste de oportunidad secuencial **no se captura con pesos ni
+heurísticas locales**. La única vía que sí lo hace es destilar la política del
+óptimo global con el solucionador exacto, que es exactamente lo que persigue el
+método de IA de la sección 7. Lejos de debilitarlo, el descarte del lookahead
+refuerza la justificación de ese método: ninguna aproximación determinista al
+futuro se le acerca.
+
 ---
 
 ## 5. Reproducibilidad
