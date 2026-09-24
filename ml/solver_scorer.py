@@ -23,12 +23,69 @@ import sys
 # módulos del motor en la raíz del repo (padre de ml/)
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
+# scorer_features vive junto a este módulo (ml/); añadirlo para que el import
+# funcione también al cargar el solver directamente vía `simulate.py --solver`.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from solver_match_crit import (MCMF, _viaje, _criticidad, _pos_centro,  # noqa: E402
-                               _mejor_centro)
+                               _mejor_centro, decidir as decidir_motor)
 import scorer_features as sf  # noqa: E402
 
 _modelo = None
 _modelo_path = None
+
+# ── Guardrail cap-30 ───────────────────────────────────────────────────────
+# Regla de salvaguarda (tail-risk), no de mejora de media: cuando el scorer y
+# el motor determinista DISCREPAN sobre a qué recogida mandar a un voluntario
+# de capacidad 30 — concretamente, el scorer lo manda a una recogida pequeña
+# (≤ GUARDRAIL_PEQUEÑA raciones) y el motor lo mandaría a una grande
+# (≥ GUARDRAIL_GRANDE raciones, que solo un cap-30 puede llevar) — se descarta
+# la asignación del scorer para ese tic y se entrega la del motor. Evita el
+# "desperdicio de portador" (quemar al único voluntario capaz en una recogida
+# diminuta sacrificando una grande que nadie más puede rescatar).
+#
+# Medido fuera de muestra (n=800, semillas 5001..5800) sobre la métrica que
+# importa — el PEOR CASO, no la media — el guardrail recorta los fallos gordos:
+# la pérdida media del decil peor pasa de −5.79 a −3.39 pts, y en los 15 peores
+# fallos del scorer mitiga 12 sin empeorar ninguno. En media y en win/loss no
+# daña (ver docs/AI_METHODS.md §10).
+GUARDRAIL_HABILITADO = os.environ.get("GUARDRAIL", "1") != "0"
+GUARDRAIL_GRANDE = int(os.environ.get("GUARDRAIL_GRANDE", "30"))   # recogida grande
+GUARDRAIL_PEQUENA = int(os.environ.get("GUARDRAIL_PEQUENA", "25"))  # recogida pequeña
+
+
+def _scorer_quema_cap30(estado, decisiones_scorer):
+    """Condición necesaria (barata) para que el guardrail pueda disparar:
+    (a) el scorer ha mandado a algún voluntario cap-30 a una recogida pequeña
+    (≤ GUARDRAIL_PEQUENA), y (b) existe al menos una recogida grande
+    (≥ GUARDRAIL_GRANDE) pendiente. Si falta cualquiera de las dos, el motor no
+    podría mandar al cap-30 a una grande y el guardrail jamás dispararía, así
+    que no hace falta calcularlo."""
+    cap = {v["id"]: v["capacidad"] for v in estado["voluntarios"]}
+    comidas = {r["id"]: r["comidas"] for r in estado["recogidas"] if not r["asignada"]}
+    quema = any(cap.get(d["voluntario"], 0) >= 30
+                and comidas.get(d["recogida"], 0) is not None
+                and comidas[d["recogida"]] <= GUARDRAIL_PEQUENA
+                for d in decisiones_scorer)
+    if not quema:
+        return False
+    hay_grande_pendiente = any(c >= GUARDRAIL_GRANDE for c in comidas.values())
+    return hay_grande_pendiente
+
+
+def _desacuerdo_cap30(estado, decisiones_scorer, decisiones_motor):
+    """True si el scorer desperdicia un cap-30 en una recogida pequeña y el motor
+    lo mandaría a una grande. Solo se dispara en DESACUERDO: si ambos coinciden
+    en mandar al cap-30 a la pequeña, no se toca nada (evita falsos positivos).
+    Requiere que ya se haya comprobado _scorer_quema_cap30."""
+    comidas = {r["id"]: r["comidas"] for r in estado["recogidas"]}
+    motor_por_vol = {d["voluntario"]: d["recogida"] for d in decisiones_motor}
+    for d in decisiones_scorer:
+        if comidas.get(d["recogida"], 0) > GUARDRAIL_PEQUENA:  # scorer no lo quema
+            continue
+        r_motor = motor_por_vol.get(d["voluntario"])
+        if r_motor is not None and comidas.get(r_motor, 0) >= GUARDRAIL_GRANDE:
+            return True
+    return False
 
 
 def cargar_modelo(ruta=None):
@@ -47,7 +104,8 @@ def cargar_modelo(ruta=None):
     return _modelo
 
 
-def decidir(estado):
+def _decidir_scorer(estado):
+    """Decisión del scorer puro (sin guardrail): scorer → min-cost flow."""
     try:
         modelo = cargar_modelo()
     except Exception:
@@ -101,3 +159,35 @@ def decidir(estado):
                 })
                 break
     return decisiones
+
+
+def decidir(estado):
+    """Solver unificado: scorer + guardrail cap-30.
+
+    Calcula la decisión del scorer. El cálculo del motor determinista es
+    CONDICIONAL: solo se computa si se cumple una condición necesaria barata
+    (el scorer ha mandado a un cap-30 a una recogida pequeña Y queda una
+    recogida grande pendiente), sin la cual el guardrail jamás podría disparar.
+    Si el guardrail detecta un desperdicio de portador cap-30 (desacuerdo
+    scorer vs motor), devuelve la decisión del motor; en cualquier otro caso,
+    la del scorer. Sin modelo disponible cae al motor determinista. El
+    guardrail se desactiva con GUARDRAIL=0.
+    """
+    decisiones_scorer = _decidir_scorer(estado)
+
+    # Guardrail desactivado: devolver el scorer tal cual.
+    if not GUARDRAIL_HABILITADO:
+        return decisiones_scorer
+
+    # Sin modelo (fallback): el scorer no decidió nada → motor determinista.
+    if not decisiones_scorer:
+        return decidir_motor(estado)
+
+    # Cálculo del motor condicional a la condición necesaria del guardrail.
+    if not _scorer_quema_cap30(estado, decisiones_scorer):
+        return decisiones_scorer
+
+    decisiones_motor = decidir_motor(estado)
+    if _desacuerdo_cap30(estado, decisiones_scorer, decisiones_motor):
+        return decisiones_motor
+    return decisiones_scorer

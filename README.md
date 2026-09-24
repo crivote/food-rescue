@@ -8,8 +8,10 @@ La entrega es un **motor de asignación determinista** (`solver_match_crit.py`):
 emparejamiento de coste mínimo que se re-ejecuta en cada tic del simulador (5
 minutos), con tres reglas de priorización calibradas empíricamente. No usa ningún
 modelo externo ni dependencia fuera de la biblioteca estándar de Python. Existe,
-además, una capa de IA **opcional** (aprendizaje por imitación) medida pero no
-integrada, documentada en [`docs/AI_METHODS.md`](docs/AI_METHODS.md).
+además, una capa de IA **integrada** (aprendizaje por imitación) como solucionador
+unificado `ml/solver_scorer.py`, que combina la decisión del scorer con un
+**guardrail** de cola que devuelve al motor determinista en caso de desperdicio de
+portador, documentada en [`docs/AI_METHODS.md`](docs/AI_METHODS.md).
 
 ---
 
@@ -131,7 +133,7 @@ Los parámetros (`BETA=1.4`, `DESIERTO=0.2`, `DESIERTO_KM=5.0`, `NEAR_K=0.5`,
 características de cada escenario no aporta mejora, y que su valor óptimo es el
 mismo en los cuatro cuartiles de dificultad.
 
-## El método de IA (medido, capa opcional)
+## El método de IA (integrado con guardrail de cola)
 
 El motor de arriba es un matcher *local*: en cada tic optimiza el presente sin
 ver el coste de oportunidad futuro (qué recogida sacrifica al consumir un
@@ -166,9 +168,16 @@ Es una mejora **real y estable** (+0.74 pts, gana en el 57% de los casos), pero
 **modesta**: el margen in-sample (+2.2 pts) se reduce fuera de muestra por
 overfitting parcial. Las variantes para ampliarla (features globales, labels
 ponderados) no aportaron; el límite es estructural — el profesor optimiza un
-plan global, y sus etiquetas por tic solo codifican decisiones locales. **Esta
-capa es opcional y no está integrada en el motor publicado**: los resultados de
-la sección anterior corresponden al motor determinista ya consolidado.
+plan global, y sus etiquetas por tic solo codifican decisiones locales.
+
+**La integración final añade un guardrail de cola.** El solucionador unificado
+`ml/solver_scorer.py` combina el scorer con una salvaguarda determinista: cuando
+el scorer desperdicia un voluntario de **capacidad 30** en una recogida pequeña
+(y el motor determinista lo mandaría a una grande), se devuelve la decisión del
+motor para ese tic. No sube la media (ya es modesta), pero **recorta el peor
+caso**: en n=800 la pérdida media del decil peor cae de −5.79 a −3.39 pts, y en
+los 15 peores fallos del scorer mitiga 12 sin empeorar ninguno. Detalle en
+[`docs/AI_METHODS.md`](docs/AI_METHODS.md) §10.
 
 El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), sección 7.

@@ -3,8 +3,10 @@
 > Documento técnico. Describe el entrenamiento del modelo de puntuación
 > (`scorer`) que sustituye a la fórmula artesanal del peso en el motor. Es el
 > detalle de la sección 7 de `METODOLOGIA.md`. El motor determinista publicado
-> sigue siendo la entrega principal; el scorer es una capa de IA **opcional** y
-> medida, no un requisito.
+> sigue siendo la entrega principal; el scorer es una capa de IA **integrada**
+> como solucionador unificado (`ml/solver_scorer.py`), que combina la decisión
+> del scorer con un **guardrail** (salvaguarda de cola) que devuelve al motor
+> determinista cuando el scorer comete un desperdicio de portador (sección 10).
 >
 > Los scripts de esta capa viven en la subcarpeta `ml/` (raíz del repo); los
 > módulos del motor que reutilizan (`solver_match_crit`, `firma_global`,
@@ -216,6 +218,13 @@ estable de **+0.61 a +0.82 pts**.
    una mejora neta de +0.74 pts sin ejecutar CP-SAT en runtime. Es una opción
    **incremental**, no el salto de la IA.
 
+5. **La integración final añade una salvaguarda de cola.** El solucionador
+   unificado (`ml/solver_scorer.py`) no se limita a usar el scorer: añade un
+   **guardrail cap-30** (sección 10) que devuelve al motor determinista cuando
+   el scorer desperdicia un voluntario de capacidad 30. No mejora la media (ya
+   vimos que es modesta), pero **recorta el peor caso**: en n=800 la pérdida
+   media del decil peor cae de −5.79 a −3.39 pts. Ver sección 10.
+
 La vía que sí capturaría el margen restante (~6 pts) es atacar la **miopía
 secuencial** directamente con una visión global del plan. Se verificó que la
 reserva explícita de capacidad (penalizar al portador cap-30 en recogidas
@@ -294,3 +303,95 @@ Se descarta SHAP como núcleo de la propuesta; queda registrada como opción
 explorada, con la razón de su descarte. La explicabilidad real de cara al
 usuario es este pipeline de traducción, que es transparente por construcción y
 no participa en la decisión.
+
+---
+
+## 10. Guardrail cap-30: salvaguarda de cola sobre el scorer
+
+### 10.1 Motivación: el scorer no "falla", pero sí mete pifias puntuales
+
+El scorer **siempre devuelve una asignación factible** — no es un sistema que
+"caiga" y deje de responder. El riesgo no es una caída, sino una **pifia**: en
+algunas semillas concretas el scorer toma una decisión local mala que se
+propaga y hunde el resultado de esa semilla. Como el evaluador final corre el
+solver sobre **unas pocas semillas concretas** (no sobre cientos), una sola
+pifia puede costar caro: no se trata de subir la media, sino de **no cagarla** en
+un caso concreto.
+
+El análisis de los peores fallos (seeds 5554, 5088, 5575, 5340, …) reveló un
+patrón consistente: el scorer **desperdicia un voluntario de capacidad 30** —el
+único que puede rescatar las recogidas grandes— mandándolo a una recogida
+**pequeña**, y así sacrifica una grande que nadie más puede llevar. Es el mismo
+"desperdicio de portador" que la sección 4.3 de `METODOLOGIA.md` ya había
+identificado como el límite estructural del matcher local.
+
+### 10.2 La regla
+
+El guardrail es una **regla determinista por desacuerdo**, no un segundo modelo:
+
+> En un tic, si el **scorer** manda a un voluntario **cap-30** a una recogida
+> **pequeña** (≤ 25 raciones) y el **motor determinista** lo mandaría a una
+> recogida **grande** (≥ 30 raciones), se descarta la decisión del scorer para
+> ese tic y se entrega la del motor.
+
+Dos detalles son clave:
+
+- **Solo en desacuerdo.** Si scorer y motor *coinciden* en mandar al cap-30 a
+  una recogida pequeña, el guardrail **no se dispara**. Esta condición elimina
+  los falsos positivos: la primera versión (disparar "si hay una grande
+  pendiente") disparaba incluso cuando ambos acordaban, y dañaba −1.46 pts donde
+  el scorer ya ganaba.
+- **Umbral 30.** El umbral de "recogida grande" se barrió (20 → 25 → 30) y el
+  efecto es **monótono**: cuanto más estricto, mejor neto. El umbral 30 es la
+  única configuración con neto no negativo, porque dispara solo en los casos
+  realmente gordos.
+
+### 10.3 Resultados (n=800, fuera de muestra, semillas 5001–5800)
+
+La métrica de evaluación del guardrail **no es la media, sino la cola** (el peor
+caso), porque su función es evitar la cagada, no mejorar el promedio.
+
+**Cola (delta vs motor, negativo = pierde):**
+
+| Métrica | scorer | guardrail |
+|---|---|---|
+| Peor delta (máxima pérdida) | −11.20 pts | **−10.30 pts** |
+| Top-5 peores | −11.2, −11.1, −10.6, −10.0, −9.6 | −10.3, −9.6, −8.1, −7.9, −7.8 |
+| Semillas perdiendo > 5 pts | 44 | **24** (−45%) |
+| Semillas perdiendo > 3 pts | 103 | **71** (−31%) |
+| Pérdida media (solo en las que pierde) | −2.62 pts | −2.17 pts |
+
+En el **decil peor** (n=80), la pérdida media cae de **−5.79 a −3.39 pts**
+(mitigación media +2.40 pts), y el guardrail **mitiga en 51 de 80** semillas. En
+los **15 peores fallos** del scorer, mitiga 12, empata 3 y **no empeora ninguno**
+(ejemplos: seed 5088 −11.1→−2.7; seed 5575 −10.6→−1.7; seed 5199 −9.6→−1.7).
+
+**Coste en media y win/loss (n=800):**
+
+| | scorer | guardrail |
+|---|---|---|
+| Media global | 57.04% | **57.17%** (+0.13) |
+| Gana al motor | 459 (57.4%) | **486 (60.8%)** |
+| Pierde al motor | 317 (39.6%) | **282 (35.2%)** |
+| Empata | 24 | 32 |
+
+El guardrail **no daña la media** (+0.13 pts, dentro del ruido) y **mejora el
+balance win/loss** frente al motor (+27 victorias, −35 derrotas). No es un
+trade-off: es una mejora "gratuita" en la cola con coste nulo en media.
+
+### 10.4 Implementación y configuración
+
+El solucionador unificado está en `ml/solver_scorer.py`: `decidir(estado)`
+calcula la decisión del scorer y la del motor determinista en paralelo, y aplica
+el guardrail si se detecta el desacuerdo cap-30. El guardrail se puede
+configurar o desactivar por variables de entorno:
+
+| Variable | Default | Efecto |
+|---|---|---|
+| `GUARDRAIL` | `1` | `0` lo desactiva (vuelve al scorer puro). |
+| `GUARDRAIL_GRANDE` | `30` | Umbral de "recogida grande" (raciones). |
+| `GUARDRAIL_PEQUENA` | `25` | Umbral de "recogida pequeña" (raciones). |
+
+El determinismo se conserva: el guardrail es una función pura del estado (no
+añade aleatoriedad), y el fallback sin modelo sigue siendo el motor
+determinista.

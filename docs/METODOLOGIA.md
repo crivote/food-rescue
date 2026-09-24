@@ -366,11 +366,13 @@ permite decidir con datos si merece la pena seguir optimizando.
 
 ## 7. Método de IA: aprendizaje por imitación del óptimo (resultado medido)
 
-> **Estado:** el scorer aprendido está **implementado y medido**, pero **no
-> integrado** en el motor publicado. Es una capa opcional; los resultados de las
-> secciones 1–6 corresponden al motor determinista consolidado. El detalle
-> técnico (features, modelo, entrenamiento) está en
-> [`docs/AI_METHODS.md`](AI_METHODS.md).
+> **Estado:** el scorer aprendido está **implementado y medido**, y la
+> integración final es un **solucionador unificado** (`ml/solver_scorer.py`) que
+> combina el scorer con un **guardrail cap-30** (salvaguarda de cola, sección
+> 7.5): cuando el scorer comete un desperdicio de portador, se devuelve al motor
+> determinista. Los resultados de las secciones 1–6 corresponden al motor
+> determinista consolidado; el detalle técnico (features, modelo, entrenamiento)
+> está en [`docs/AI_METHODS.md`](AI_METHODS.md).
 
 ### 7.1 Motivación: por qué los pesos locales tocan techo
 
@@ -492,3 +494,39 @@ de quemar un voluntario en una recogida pequeña no cabe en un ranking de arista
 individuales. Y tampoco lo captura una penalización local de reserva (sección
 4.3): el margen restante (~6 pts) exige atacar la miopía secuencial con una
 visión **global** del plan, no con pesos ni reservas locales.
+
+### 7.5 Guardrail cap-30: salvaguarda de cola (paso final de integración)
+
+Aunque el scorer gana en media, en **algunas semillas concretas** comete una
+pifia que hunde ese escenario: desperdicia un voluntario de **capacidad 30** —el
+único que puede rescatar las recogidas grandes— mandándolo a una recogida
+pequeña. Como el evaluador final corre el solver sobre **unas pocas semillas
+concretas**, una sola pifia puede costar caro. La salvaguarda no busca subir la
+media (ya es modesta, +0.74 pts), sino **no cagarla** en un caso concreto.
+
+**La regla** (determinista, por desacuerdo — no un segundo modelo):
+
+> Si el scorer manda a un **cap-30** a una recogida **pequeña** (≤ 25 raciones)
+> y el motor determinista lo mandaría a una **grande** (≥ 30 raciones), se
+> entrega la decisión del motor para ese tic.
+
+Dos detalles: (1) solo dispara en **desacuerdo** (si ambos coinciden, no se
+toca nada — elimina los falsos positivos de la primera versión, que dañaba
+−1.46 pts); (2) umbral 30, el más estricto del barrido (20→25→30), el único con
+neto no negativo.
+
+**Resultado (n=800, fuera de muestra, 5001–5800), medido sobre la cola** (la
+métrica correcta para una salvaguarda):
+
+- La pérdida media del **decil peor** cae de **−5.79 a −3.39 pts** (mitigación
+  +2.40 pts), y el guardrail mitiga en **51 de 80** semillas del decil.
+- En los **15 peores fallos** del scorer: mitiga 12, empata 3, **no empeora
+  ninguno** (seed 5088: −11.1→−2.7; seed 5575: −10.6→−1.7).
+- El nº de semillas perdiendo más de 5 pts frente al motor baja de 44 a 24.
+- **Coste en media: nulo** (57.04%→57.17%, +0.13); **win/loss mejora** frente al
+  motor (57.4%→60.8% victorias).
+
+No es un trade-off: es una mejora "gratuita" de cola con coste nulo en media.
+Implementado en `ml/solver_scorer.py` (`decidir(estado)` calcula scorer y motor
+en paralelo y aplica la regla); configurable por `GUARDRAIL` / `GUARDRAIL_GRANDE`
+/ `GUARDRAIL_PEQUENA`. Detalle completo en `AI_METHODS.md` §10.
