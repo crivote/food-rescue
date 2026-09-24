@@ -85,14 +85,20 @@ Sobre el escenario publicado (`sample_01`, 775 raciones):
 | **Este motor** | **55.4%** |
 
 En el conjunto de validación (2000 escenarios fuera de muestra, estratificados
-por dificultad), el motor supera a ambas referencias en los **cuatro cuartiles**:
+por dificultad), el motor supera a ambas referencias en los **cuatro cuartiles**,
+y el **modelo integrado** (scorer + guardrail) lo supera a su vez de forma
+consistente:
 
-| Cuartil | Greedy | Matcher base | **Motor** | Mejora vs base |
-|---|---|---|---|---|
-| Q1 (fácil) | 51.7% | 58.1% | **62.8%** | +4.6 |
-| Q2 | 48.0% | 54.9% | **58.9%** | +4.1 |
-| Q3 | 45.0% | 51.5% | **54.9%** | +3.4 |
-| Q4 (difícil) | 41.5% | 46.6% | **49.9%** | +3.4 |
+| Cuartil | Greedy | Matcher base | Motor | **Integrado** | Δ integrado vs motor |
+|---|---|---|---|---|---|
+| Q1 (fácil) | 51.7% | 58.1% | 62.8% | **63.5%** | +0.73 |
+| Q2 | 48.0% | 54.9% | 58.9% | **59.9%** | +0.94 |
+| Q3 | 45.0% | 51.5% | 54.9% | **55.7%** | +0.77 |
+| Q4 (difícil) | 41.5% | 46.6% | 49.9% | **51.0%** | +1.11 |
+| **Total** | 46.5% | 52.8% | 56.6% | **57.5%** | **+0.89** |
+
+El modelo integrado gana al motor determinista en **1210/2000** escenarios
+(60.5%), con una ventaja de **+0.89 pts** estable en los cuatro cuartiles.
 
 El detalle completo de la validación (parámetros topológicos, índice de
 dificultad, umbrales mínimo y máximo, y la justificación empírica de cada
@@ -152,20 +158,21 @@ aporta— sino en esa **miopía secuencial**. El método para atacarla fue un
   soluciones óptimas empatadas devuelva); el alumno tiene pesos fijos, así que
   toda la cadena online produce siempre la misma salida.
 
-**Resultado (medido, fuera de muestra, 1200 semillas estratificadas).** El
-scorer aprendido **bate al motor determinista en los cuatro cuartiles de
-dificultad**:
+**Resultado (medido, fuera de muestra, 2000 semillas estratificadas).** El
+modelo integrado (scorer + guardrail) **bate al motor determinista en los
+cuatro cuartiles de dificultad**, sobre el mismo set de la tabla de resultados
+anterior:
 
-| Cuartil | Motor | Scorer | Δ |
+| Cuartil | Motor | Integrado | Δ |
 |---|---|---|---|
-| Q1 (fácil) | 62.69% | 63.30% | +0.61 |
-| Q2 | 59.19% | 60.01% | +0.82 |
-| Q3 | 54.74% | 55.46% | +0.72 |
-| Q4 (difícil) | 49.38% | 50.20% | +0.82 |
-| **Total** | **56.50%** | **57.24%** | **+0.74** |
+| Q1 (fácil) | 62.8% | 63.5% | +0.73 |
+| Q2 | 58.9% | 59.9% | +0.94 |
+| Q3 | 54.9% | 55.7% | +0.77 |
+| Q4 (difícil) | 49.9% | 51.0% | +1.11 |
+| **Total** | **56.6%** | **57.5%** | **+0.89** |
 
-Es una mejora **real y estable** (+0.74 pts, gana en el 57% de los casos), pero
-**modesta**: el margen in-sample (+2.2 pts) se reduce fuera de muestra por
+Es una mejora **real y estable** (+0.89 pts, gana en el 60.5% de los casos),
+pero **modesta**: el margen in-sample (+2.2 pts) se reduce fuera de muestra por
 overfitting parcial. Las variantes para ampliarla (features globales, labels
 ponderados) no aportaron; el límite es estructural — el profesor optimiza un
 plan global, y sus etiquetas por tic solo codifican decisiones locales.
