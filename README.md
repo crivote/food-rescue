@@ -7,7 +7,9 @@ simulador de eventos discretos.
 La entrega es un **motor de asignación determinista** (`solver_match_crit.py`): un
 emparejamiento de coste mínimo que se re-ejecuta en cada tic del simulador (5
 minutos), con tres reglas de priorización calibradas empíricamente. No usa ningún
-modelo externo ni dependencia fuera de la biblioteca estándar de Python.
+modelo externo ni dependencia fuera de la biblioteca estándar de Python. Existe,
+además, una capa de IA **opcional** (aprendizaje por imitación) medida pero no
+integrada, documentada en [`docs/AI_METHODS.md`](docs/AI_METHODS.md).
 
 ---
 
@@ -124,32 +126,46 @@ Los parámetros (`BETA=1.4`, `DESIERTO=0.2`, `DESIERTO_KM=5.0`, `NEAR_K=0.5`,
 características de cada escenario no aporta mejora, y que su valor óptimo es el
 mismo en los cuatro cuartiles de dificultad.
 
-## El plan de IA (en curso, experimental)
+## El método de IA (medido, capa opcional)
 
 El motor de arriba es un matcher *local*: en cada tic optimiza el presente sin
 ver el coste de oportunidad futuro (qué recogida sacrifica al consumir un
 voluntario capaz). Su límite no está en los pesos —se verificó que modularlos no
-aporta— sino en esa **miopía secuencial**. El plan para atacarla es un
+aporta— sino en esa **miopía secuencial**. El método para atacarla fue un
 **aprendizaje por imitación** (behavioral cloning) del solucionador exacto:
 
 - **Profesor (offline).** `optimo_exacto.py` resuelve cada escenario a óptimo
   entero con CP-SAT. Es el oráculo que conoce la asignación global correcta.
-- **Alumno (online, determinista).** Un modelo de puntuación aprende, a partir
-  de los planes óptimos, a dar a cada arista `(voluntario, recogida)` el peso que
-  habría llevado al profesor a elegirla. Sustituye la **fórmula artesanal del
-  peso**, manteniendo intacta la capa de emparejamiento (`min-cost flow`) que ya
-  garantiza factibilidad y determinismo.
+- **Alumno (online, determinista).** Un modelo de puntuación (LightGBM,
+  LambdaRank) aprende, a partir de los planes óptimos, a dar a cada arista
+  `(voluntario, recogida)` el peso que habría llevado al profesor a elegirla.
+  Sustituye la **fórmula artesanal del peso**, manteniendo intacta la capa de
+  emparejamiento (`min-cost flow`) que ya garantiza factibilidad y determinismo.
 - **Por qué es determinista.** El profesor corre offline (da igual cuál de sus
   soluciones óptimas empatadas devuelva); el alumno tiene pesos fijos, así que
   toda la cadena online produce siempre la misma salida.
 
-**Estado actual.** El material de entrenamiento ya está generado: 600 escenarios
-resueltos a óptimo (95% `OPTIMAL`, 0 fallos) en un run nocturno sobre CPU
-(`etiquetar_cpsat.py`). Queda pendiente destilar los planes a etiquetas de
-arista, entrenar el scorer y validarlo fuera de muestra. **Esta parte es
-experimental y todavía no está integrada en el motor publicado**; los resultados
-de la sección anterior corresponden al motor determinista ya consolidado. El
-detalle metodológico está en `docs/METODOLOGIA.md`, sección 7.
+**Resultado (medido, fuera de muestra, 1200 semillas estratificadas).** El
+scorer aprendido **bate al motor determinista en los cuatro cuartiles de
+dificultad**:
+
+| Cuartil | Motor | Scorer | Δ |
+|---|---|---|---|
+| Q1 (fácil) | 62.69% | 63.30% | +0.61 |
+| Q2 | 59.19% | 60.01% | +0.82 |
+| Q3 | 54.74% | 55.46% | +0.72 |
+| Q4 (difícil) | 49.38% | 50.20% | +0.82 |
+| **Total** | **56.50%** | **57.24%** | **+0.74** |
+
+Es una mejora **real y estable** (+0.74 pts, gana en el 57% de los casos), pero
+**modesta**: el margen in-sample (+2.2 pts) se reduce fuera de muestra por
+overfitting parcial. Las variantes para ampliarla (features globales, labels
+ponderados) no aportaron; el límite es estructural — el profesor optimiza un
+plan global, y sus etiquetas por tic solo codifican decisiones locales. **Esta
+capa es opcional y no está integrada en el motor publicado**: los resultados de
+la sección anterior corresponden al motor determinista ya consolidado. El
+detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
+[`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), sección 7.
 
 ## Ejecución
 
@@ -181,6 +197,7 @@ Devuelve (55.4% en el escenario publicado):
 solver_match_crit.py            ← el motor (la entrega)
 solver_match.py                 ← matcher base (referencia sin heurísticas)
 docs/METODOLOGIA.md             ← validación completa: metodología y evidencia
+docs/AI_METHODS.md              ← método de IA: scorer por imitación (técnico)
 ai-for-good-72h-harness/        ← simulador del reto (MIT, ajeno)
     comida/simulate.py          ← motor del simulador
     comida/generar_escenario.py ← generador determinista de escenarios
@@ -188,11 +205,15 @@ ai-for-good-72h-harness/        ← simulador del reto (MIT, ajeno)
     comida/scenarios/sample_01.json
 firma_global.py                 ← parámetros topológicos de un escenario
 estratifica_cuartiles.py        ← estratificación por cuartiles de dificultad
-bench_alcanzable.py             ← umbral máximo simplificado
-techo_realista.py               ← umbral máximo por grafo de itinerarios (LP)
+bench_alcanzable.py             ← umbral máximo simplificado (techo por ítem)
 optimo_exacto.py                ← óptimo entero de un escenario (CP-SAT)
 valida_beta_14.py               ← validación por pares del parámetro BETA
-etiquetar_cpsat.py              ← genera el material de entrenamiento del scorer (sección 7)
+ml/                             ← capa de IA (aprendizaje por imitación)
+    etiquetar_cpsat.py          ← genera el material de entrenamiento del scorer
+    scorer_features.py          ← features del scorer (fuente única)
+    entrenar_variantes.py       ← entrena el scorer (LightGBM LambdaRank)
+    solver_scorer.py            ← motor online con el scorer aprendido
+    bench_estratificado.py      ← motor vs scorer fuera de muestra, por cuartiles
 ```
 
 ## Visión de producto — del simulador al sistema real

@@ -100,57 +100,70 @@ interna consistente.
 ## 3. Umbral máximo (techo de mejora)
 
 Para no invertir esfuerzo en un problema ya resuelto, hace falta también un
-**umbral superior**: cuánto se puede llegar a recuperar en cada escenario. No se
-puede resolver el problema de forma óptima en todos los escenarios con los
-medios disponibles (es NP-difícil), así que se usan **dos estimaciones** que
-acotan el óptimo:
+**umbral superior**: cuánto se puede llegar a recuperar en cada escenario. El
+problema es NP-difícil, así que no se puede resolver de forma óptima en todos
+los escenarios con los medios disponibles. Esta sección documenta **el proceso**
+que llevó del cálculo por estimación al techo real, con sus correcciones y los
+caminos descartados.
 
 ### 3.1 Estimación simplificada (techo por ítem)
 
-Solo cuenta la comida que es **imposible** salvar por los requisitos de tiempo,
-distancia y capacidad de cada voluntario, ignorando la contención (que un mismo
-voluntario no puede hacer todos los viajes). Es un límite superior **holgado**:
+Primera cota: solo cuenta la comida **imposible** de salvar por los requisitos
+de tiempo, distancia y capacidad de cada voluntario, ignorando la contención
+(que un mismo voluntario no puede hacer todos los viajes). Es un límite superior
+**muy holgado**:
 
 - Media global: **~96%** (en el escenario publicado, solo 1 recogida de 43 es
   irrecuperable).
 
-### 3.2 Estimación realista (grafo de itinerarios)
+### 3.2 Estimación por relajación lineal (descartada tras corregir)
 
-Construye un **grafo de itinerarios** por voluntario: secuencias
-`casa → recogida → centro → recogida → centro → …`, con tiempos redondeados al
-tick (5 min, redondeo **hacia arriba**, conservador) y respetando ventanas,
-capacidad y la regla de que el primer viaje sale de casa y los siguientes de un
-centro. Se resuelve como un problema de flujo/cubrimiento **relajando la
-integralidad**: se permite que una recogida se "parta" entre dos viajes (algo
-físicamente imposible), lo que **infla** el resultado.
+Segundo intento, más apretado: un **grafo de itinerarios** por voluntario
+(secuencias `casa → recogida → centro → …`), con tiempos redondeados al tick
+(hacia arriba, conservador) y respetando ventanas, capacidad y la regla de que
+el primer viaje sale de casa y los siguientes de un centro. Se resuelve como un
+problema de flujo/cubrimiento **relajando la integralidad** (se permite "partir"
+una recogida entre dos viajes, físicamente imposible), lo que por diseño sitúa
+la cota **por encima** del óptimo real.
 
-Esta estimación es más apretada que la simplificada, pero **sigue estando por
-encima del óptimo real**, porque permite partir recogidas. El óptimo real queda
-**por debajo** de ella.
+**Proceso de depuración.** Esta cota pasó por **dos bugs** de modelado, que
+empujaban en direcciones opuestas y se compensaban, por lo que el resultado no
+parecía absurdo y pasó desapercibido:
 
-| Cuartil | Motor final | Estimación realista (LP) | Margen motor→est. |
-|---|---|---|---|
-| Q1 | 62.8% | 83.5% | +20.7 |
-| Q2 | 58.9% | 79.7% | +20.8 |
-| Q3 | 54.9% | 76.9% | +22.0 |
-| Q4 | 49.9% | 68.8% | +18.9 |
+1. **Teleport de origen.** Se asumía que cada viaje "desde centro" salía del
+   centro **más cercano a la siguiente recogida**; el harness real fija al
+   voluntario en el centro donde terminó el viaje anterior. Este defecto
+   **inflaba** la cota (hasta 71.1% en el escenario publicado).
+2. **`SetCoefficient` que no acumula.** Un viaje que sale y llega al *mismo*
+   centro recibía coeficiente +1 y luego −1 sobre la misma variable; el segundo
+   **sobrescribía** al primero, dejando la restricción más estricta de lo debido
+   y la cota **por debajo** del óptimo (imposible en una relajación). Medido
+   pareado en 40 escenarios: infravaloraba en 40/40 (media −2.67 pts).
 
-### 3.3 El umbral real (integralidad)
+Corregidos ambos, la jerarquía se restableció (`cota_LP ≥ óptimo_entero`), pero
+la cota quedó **demasiado holgada para aportar** (media global 65.1% frente a
+~62% el óptimo real, y una dispersión de ~8 pts entre cuartiles). La tabla de
+"margen ~20 pts" que esta cota sugería era engañosa: el margen real es ~6 pts
+(ver 3.3). Por eso la estimación lineal se **retira**: no es un límite útil y
+confunde más de lo que aclara.
 
-La única relajación que queda en 3.2 es la **integralidad** (no partir
-recogidas). Eliminarla convierte el problema en entero, que sí es NP-difícil,
-pero **para un escenario concreto es resoluble** con un solucionador de
-programación con restricciones (CP-SAT). Esto da el **óptimo real** de un
-escenario.
+### 3.3 El techo real: solucionador exacto en batch
 
-> **Corrección de modelado (importante).** Una primera versión del solucionador
-> exacto asumía que cada viaje "desde centro" salía del centro **más cercano a la
-> siguiente recogida** (el voluntario podía "teletransportarse" entre centros
-> entre dos viajes). El harness real, en cambio, fija al voluntario en el centro
-> donde terminó el viaje anterior. Ese defecto **inflaba** el óptimo hasta 71.1%.
-> Tras corregir el origen (cada viaje sale del centro donde terminó el anterior),
-> el óptimo se validó **reproduciéndolo contra el harness real** (coincidencia
-> exacta), obteniendo los valores de abajo.
+La única forma de obtener el techo **exacto** de un escenario es eliminar la
+integralidad relajada y resolver el problema entero con CP-SAT (`optimo_exacto.py`).
+Es NP-difícil, pero **para un escenario concreto es resoluble** y rápido:
+
+| Magnitud (run batch) | Valor |
+|---|---|
+| Escenarios resueltos | 600 (semillas 20300–20899) |
+| Alcanzaron `OPTIMAL` | **572 (95.3%)** |
+| `FEASIBLE` (subóptimo, sin probar optimalidad) | 28 (4.7%) |
+| Timeouts | 0 |
+| Tiempo por escenario | media ~22.8 s, **mediana ~12 s** |
+
+Con un techo exacto a ~12 s de mediana, no hace falta ninguna estimación: **el
+margen se mide directamente, solo sobre las semillas donde el solver alcanzó
+`OPTIMAL`**, sin extrapolar a semillas arbitrarias.
 
 | Magnitud (escenario publicado, `sample_01`) | Valor |
 |---|---|
@@ -171,8 +184,32 @@ replanificar en caliente**, no un plan único al inicio.
 
 **Conclusión del umbral máximo:** el motor final (55.4%) está a **+6.4 puntos**
 del óptimo alcanzable real (61.8%) en el escenario publicado. Hay margen real de
-mejora, pero es finito y medible — menor que lo que sugería la versión anterior
-del análisis (que estaba inflada por el defecto de origen).
+mejora, finito y medible — y se reporta **solo sobre la muestra de soluciones
+óptimas**, no como una extrapolación.
+
+### 3.4 Regresión del techo (explorada y descartada por error alto)
+
+Con 572 semillas `OPTIMAL` y sus parámetros estructurales (sección 1.1), se
+planteó aprender una **función escalar** `estructura → techo óptimo`, para
+estimar el margen de *cualquier* semilla sin ejecutar el solver. Es una idea
+mucho más sencilla que el scorer (una regresión, no una política), y la señal
+existe: `alcanzable_pct` correlaciona +0.64 con el techo, `comida_grande_por_cap30`
+−0.59 y `d_rec_centro_media` −0.42.
+
+Sin embargo, el **error de predicción es demasiado alto** para resultar útil:
+
+| Modelo lineal | RMSE fuera de muestra |
+|---|---|
+| Solo `alcanzable_pct` | 6.6 pts |
+| + cuello de botella de capacidad | 6.3 pts |
+| + distancia (3 features) | 5.6 pts |
+| 6 features | **5.5 pts** |
+
+Con un techo que oscila entre ~40% y ~85%, un error de ±5.5 pts no distingue
+entre "mucho margen" y "poco margen" con la resolución necesaria, y no hay un
+caso de uso que lo justifique: el techo es una cifra **diagnóstica** (no la
+consume el motor para decidir), y ya se obtiene con exactitud a ~12 s del
+solver. La regresión se **descarta por falta de valor**, no por inviabilidad.
 
 ---
 
@@ -250,13 +287,16 @@ escenarios se generan de forma determinista con el generador público
 | `firma_global.py` | Calcula los 10 parámetros topológicos de un escenario (sección 1.1). |
 | `estratifica_cuartiles.py` | Particiona N escenarios en cuartiles de dificultad y mide greedy / matcher base / motor en cada uno (sección 2). |
 | `bench_alcanzable.py` | Estimación simplificada (techo por ítem, sección 3.1). |
-| `techo_realista.py` | Estimación realista por grafo de itinerarios con relajación LP (sección 3.2). |
 | `optimo_exacto.py` | Óptimo entero exacto de un escenario con CP-SAT (sección 3.3). |
 | `solver_match_crit.py` | Motor final con los tres parámetros de mejora (sección 4). |
 | `solver_match.py` | Matcher base (referencia culta). |
 | `baseline_greedy.py` | Greedy del reto (referencia). |
 | `valida_beta_14.py` | Validación por pares del parámetro BETA. |
-| `etiquetar_cpsat.py` | Genera el material de entrenamiento del scorer (sección 7). |
+| `ml/etiquetar_cpsat.py` | Genera el material de entrenamiento del scorer (sección 7). |
+| `ml/scorer_features.py` | Fuente única de las features del scorer (locales + globales). |
+| `ml/entrenar_variantes.py` | Entrena el scorer (LightGBM LambdaRank) y mide in-sample. |
+| `ml/solver_scorer.py` | Motor online con el scorer aprendido en lugar del peso artesanal. |
+| `ml/bench_estratificado.py` | Comparativa motor vs scorer fuera de muestra, por cuartiles. |
 
 **Comandos de reproducción** (desde la raíz del repo, con `ortools` instalado):
 
@@ -266,9 +306,6 @@ BETA=1.4 python3 estratifica_cuartiles.py 2000 5001
 
 # firma topológica de sample_01 frente a una muestra
 python3 firma_global.py 2000 5001
-
-# estimación realista (LP) sobre n escenarios
-python3 techo_realista.py 600 5001
 
 # óptimo entero exacto del escenario publicado (semilla 1)
 python3 optimo_exacto.py 1 60
@@ -294,11 +331,13 @@ permite decidir con datos si merece la pena seguir optimizando.
 
 ---
 
-## 7. Plan de IA: aprendizaje por imitación del óptimo (en curso)
+## 7. Método de IA: aprendizaje por imitación del óptimo (resultado medido)
 
-> **Estado:** experimental, **no integrado** en el motor publicado. Esta sección
-> documenta el plan y el material ya generado; los resultados de las secciones
-> 1–6 corresponden al motor determinista consolidado.
+> **Estado:** el scorer aprendido está **implementado y medido**, pero **no
+> integrado** en el motor publicado. Es una capa opcional; los resultados de las
+> secciones 1–6 corresponden al motor determinista consolidado. El detalle
+> técnico (features, modelo, entrenamiento) está en
+> [`docs/AI_METHODS.md`](AI_METHODS.md).
 
 ### 7.1 Motivación: por qué los pesos locales tocan techo
 
@@ -373,19 +412,50 @@ Los planes se materializan con `etiquetar_cpsat.py` en `labels/planes.jsonl`
 (cada línea: `{semilla, status, wall, pct, gap, plan[]}`). Solo se conservan las
 semillas `OPTIMAL`; un plan subóptimo no debe enseñar al alumno.
 
-### 7.4 Pasos pendientes y criterio de aceptación
+### 7.4 Resultados medidos
 
-1. **Etiquetado de aristas.** De cada plan óptimo, derivar qué aristas
-   `(voluntario, recogida)` eligió el profesor (positivo) y cuáles descartó
-   (negativo), junto con las **características** de cada arista (comidas,
-   duración, criticidad, tiempo restante del voluntario, cuántos otros pueden
-   hacer esa recogida, etc.).
-2. **Entrenar el scorer** sobre esas aristas etiquetadas.
-3. **Validar fuera de muestra.** Medir el % de comida rescatada del motor con el
-   scorer aprendido, en escenarios **no vistos** en el entrenamiento, contra el
-   motor actual (55.4% publicado).
+Los pasos del plan (etiquetar aristas, entrenar el scorer, validar fuera de
+muestra) se ejecutaron completos. El resumen, por configuración y conjunto de
+medida:
 
-**Criterio de aceptación.** El scorer aprendido solo se integra si, de forma
-**reproducible y fuera de muestra**, bate al motor determinista actual sin
-degradar el peor caso. En caso contrario, se descarta y la entrega queda como
-está (el motor local ya consolidado).
+| Conjunto | Motor | Scorer (locales) | Scorer (globales) |
+|---|---|---|---|
+| In-sample, 572 semillas | 55.97% | 58.04% (+2.07) | 58.17% (+2.20) |
+| Fuera de muestra, 20 semillas | 55.88% | +1.22 | +1.49 |
+| **Fuera de muestra, 1200 semillas** | **56.50%** | — | **57.24% (+0.74)** |
+
+La comparativa definitiva es la de **1200 semillas fuera de muestra**,
+estratificadas en los cuatro cuartiles de dificultad:
+
+| Cuartil | n | Motor | Scorer | Δ |
+|---|---|---|---|---|
+| Q1 (fácil) | 300 | 62.69% | 63.30% | +0.61 |
+| Q2 | 300 | 59.19% | 60.01% | +0.82 |
+| Q3 | 300 | 54.74% | 55.46% | +0.72 |
+| Q4 (difícil) | 300 | 49.38% | 50.20% | +0.82 |
+| **Total** | **1200** | **56.50%** | **57.24%** | **+0.74** |
+
+**Criterio de aceptación aplicado.** El scorer aprendido **sí** bate al motor
+determinista de forma reproducible y fuera de muestra: gana en los **cuatro
+cuartiles** (688/1200, 57.3%), sin degradar el peor caso. La mejora es modesta
+pero **estable** (+0.61 a +0.82 pts), no un artefacto de muestra corta.
+
+**Conclusión de la vía de IA.** El behavioral cloning es una mejora *real y
+robusta* (+0.74 pts), pero **pequeña**: el margen in-sample (+2.2 pts) se reduce
+fuera de muestra por overfitting parcial. Las variantes que intentaron ampliar
+el objetivo no lo cerraron:
+
+- **Features globales** (raciones pendientes, presión de capacidad, horizonte):
+  aportan +0.13 pts in-sample, es decir, nada significativo. El +3.10 que
+  sugería una submuestra de 100 era ruido.
+- **Label ponderado por raciones**: sin efecto (hay un solo positivo por grupo,
+  así que la magnitud no cambia el orden del ranking).
+- **Más datos**: innecesario — con 572 semillas (240 k aristas) ya hay muestra
+  suficiente; el límite es estructural, no de datos.
+
+El límite de fondo se confirma: el profesor optimiza un plan **global**, y sus
+etiquetas por tic solo codifican decisiones **locales**. El coste de oportunidad
+de quemar un voluntario en una recogida pequeña no cabe en un ranking de aristas
+individuales. Lo que cerraría el margen restante (~6 pts) no es mejorar este
+objetivo, sino atacar la miopía secuencial directamente (lookahead determinista o
+reserva explícita de capacidad).

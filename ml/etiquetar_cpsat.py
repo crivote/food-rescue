@@ -20,9 +20,9 @@ import os
 import sys
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "ai-for-good-72h-harness", "comida"))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "ai-for-good-72h-harness", "comida"))
 
 from generar_escenario import generar          # noqa: E402
 from optimo_exacto import resolver             # noqa: E402
