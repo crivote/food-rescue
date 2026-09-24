@@ -35,6 +35,11 @@ def cargar_modelo(ruta=None):
     global _modelo, _modelo_path
     if _modelo is not None and (ruta is None or ruta == _modelo_path):
         return _modelo
+    # Prioridad de ruta: argumento explícito → variable de entorno → default.
+    # El default apunta a un artefacto que NO se commitea (ver .gitignore):
+    # regenerar con `bash ml/build_scorer.sh`. Si no existe, decidir() devuelve
+    # [] (fallback silencioso al motor miope); el orquestador debe comprobar
+    # la disponibilidad del modelo antes de invocar este solver.
     ruta = ruta or os.environ.get("SCORER_MODEL") or "labels/scorer_full.txt"
     import lightgbm as lgb
     _modelo = lgb.Booster(model_file=ruta)

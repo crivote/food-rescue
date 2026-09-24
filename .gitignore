@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+# artefactos de entrenamiento del scorer (regenerables con ml/etiquetar_cpsat.py)
+/labels/
+# modelos entrenados (regenerables con ml/entrenar_variantes.py; en runtime, solver_scorer.py los busca en $SCORER_MODEL o labels/scorer_full.txt)
+/models/

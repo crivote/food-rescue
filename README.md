@@ -103,23 +103,28 @@ las asignaciones de ese tic. En cada llamada:
 
 1. **Emparejamiento de coste mínimo** (min-cost flow) entre voluntarios libres y
    recogidas pendientes, optimizando el peso de cada viaje candidato.
-2. El peso de cada viaje combina **cuatro** factores:
+2. El peso de cada viaje combina **tres reglas operativas** (todas en forma de
+   factor multiplicativo, calculadas sobre la base `comidas/duración`):
 
 ```
-peso = (comidas / duración)                       ← eficiencia del viaje
+peso = (comidas / duración)                       ← eficiencia del viaje (base)
      × (1 + BETA / n_cap)                         ← criticidad (exclusividad)
-     × (1 + DESIERTO · m)                         ← bono de lejanía
+     × (1 + DESIERTO · m)                         ← bono de lejanía (m ∈ {1,2})
      × (1 − NEAR_K · (NEAR_KM − d)/NEAR_KM)       ← malus de cercanía
 ```
 
 - **Criticidad** (`n_cap`): número de voluntarios capaces de rescatar esa recogida
   *en su ventana completa*, recalculado en cada tic. Una recogida que solo un
   voluntario puede alcanzar recibe más peso. Es la regla que más aporta.
-- **Desierto**: bono para recogidas lejanas a su centro más cercano (> 5 km), el
-  doble en el primer viaje de un voluntario (coste de oportunidad de ida desde
-  casa).
+- **Desierto**: bono para recogidas lejanas a su centro más cercano (> 5 km),
+  con `m=2` si el voluntario está en su posición de partida (primer viaje, con
+  coste de oportunidad de ida desde casa) y `m=1` en los re-despachos. El bonus
+  es continuo: en un escenario sin recogidas lejanas vale exactamente 1 (no
+  añade ruido). El factor `m` es parte de esta regla, no un cuarto factor
+  independiente.
 - **Cercanía**: malus para recogidas pegadas a su centro (< 4 km), que son viajes
-  baratos y conviene no consumir mientras quede tiempo.
+  baratos y conviene no consumir mientras quede tiempo. Es el espejo simétrico
+  del desierto.
 
 Los parámetros (`BETA=1.4`, `DESIERTO=0.2`, `DESIERTO_KM=5.0`, `NEAR_K=0.5`,
 `NEAR_KM=4.0`) son **fijos y globales**: se verificó que hacerlos depender de las
@@ -163,9 +168,20 @@ overfitting parcial. Las variantes para ampliarla (features globales, labels
 ponderados) no aportaron; el límite es estructural — el profesor optimiza un
 plan global, y sus etiquetas por tic solo codifican decisiones locales. **Esta
 capa es opcional y no está integrada en el motor publicado**: los resultados de
-la sección anterior corresponden al motor determinista ya consolidado. El
-detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
+la sección anterior corresponden al motor determinista ya consolidado.
+
+El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), sección 7.
+
+> **Reproducir los números del scorer.** Las cifras de la tabla anterior
+> (Q1=+0.61 … Q4=+0.82) proceden de un modelo entrenado sobre 600 escenarios
+> OPTIMAL (semillas 20300–20899), validado contra 1200 escenarios fuera de
+> muestra (5001–6200). El modelo (2.7 MB) y los planes CP-SAT (665 KB) son
+> artefactos regenerables, no versionados: ejecuta `bash ml/build_scorer.sh`
+> (~2 h de CPU en 4 cores) para obtenerlos desde cero. Los scripts están
+> diseñados para correr en CPU y son deterministas (semillas explícitas).
+> Mientras el modelo no exista, `ml/solver_scorer.py` cae al fallback `[]`
+> (silencioso); el orquestador debe comprobar la disponibilidad del modelo.
 
 ## Ejecución
 

@@ -178,6 +178,17 @@ definitiva, por cuartiles de dificultad (misma estratificación estructural de
 | Q4 (difícil) | 300 | 49.38% | 50.20% | +0.82 |
 | **Total** | **1200** | **56.50%** | **57.24%** | **+0.74** |
 
+> **Nota sobre las dos validaciones fuera de muestra del repo.** El motor
+> determinista está medido sobre **2000 escenarios** (semillas 5001–7000, ver
+> `METODOLOGIA.md` §2) y arroja, en Q1, **62.8%**. El scorer se mide sobre una
+> submuestra de **1200 escenarios** (semillas 5001–6200, las primeras 300 de
+> cada cuartil) y arroja **62.69%** para el motor y **63.30%** para el scorer
+> en Q1. Son benchmarks distintos con semillas y tamaños distintos: la
+> diferencia de 0.11 pts en Q1 entre el 62.8% del README y el 62.69% de esta
+> tabla refleja eso, no una inconsistencia. El tamaño importa: el +0.74 pts
+> del scorer es estable en los **cuatro cuartiles** dentro de la misma
+> muestra de 1200.
+
 El scorer **gana en los cuatro cuartiles** (688/1200, 57.3%), con un margen
 estable de **+0.61 a +0.82 pts**.
 
