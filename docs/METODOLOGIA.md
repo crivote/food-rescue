@@ -274,6 +274,39 @@ Se intentaron dos refinamientos, ambos **sin éxito**:
 | `NEAR_K` | **0.5** | Malus por cercanía. Pico de la curva de campana. |
 | `NEAR_KM` | **4.0** | Umbral de "cercanía" (km). |
 
+### 4.3 Reserva de portador (explorada y refutada)
+
+El diagnóstico de la sección 3.3 identificó un caso concreto donde el motor
+pierde comida: un voluntario de capacidad 30 (el único con ventana larga) se
+consume en recogidas pequeñas y luego no puede hacer las grandes que solo él
+alcanza (en el escenario publicado, `v05` hace `r15/r27/r24` y pierde `r25`).
+La hipótesis natural era una **reserva explícita de capacidad**: penalizar la
+arista *(cap-30 → recogida pequeña)* mientras quede comida grande pendiente,
+para "guardar" al portador escaso.
+
+Se implementó como una **regla quirúrgica separada**, sin tocar el ratio
+`comidas/duración` (que la sección 4 mostró esencial), y se validó a escala:
+
+| Penalización (PENALTY) | Media (500 semillas OOS) | Δ vs motor | ↑/↓ |
+|---|---|---|---|
+| 0 (motor) | 56.19% | — | — |
+| 0.3 | 56.00% | −0.19 | 95/104 |
+| 0.5 | 55.77% | −0.43 | 102/140 |
+| 0.7 | 55.58% | −0.62 | 99/162 |
+
+**Resultado: la reserva resta, no suma.** La penalización degrada la media de
+forma monótona y las regresiones superan a las mejoras. La causa: al quitarle al
+cap-30 las recogidas pequeñas que *sí* puede hacer a tiempo, se deja escapar
+comida sin garantía de que capture la grande. La señal de `sample_01` (un solo
+escenario) **no generaliza** — es el mismo patrón que la modulación por
+escenario (4.1): un hallazgo de un único caso no sobrevive a la validación en
+muestra amplia.
+
+Esto cierra la vía de la **reserva de capacidad local**: el coste de
+oportunidad del portador no se captura con penalizaciones locales; exige ver el
+futuro (lookahead global), que es exactamente lo que intenta el método de IA de
+la sección 7.
+
 ---
 
 ## 5. Reproducibilidad
@@ -456,6 +489,6 @@ el objetivo no lo cerraron:
 El límite de fondo se confirma: el profesor optimiza un plan **global**, y sus
 etiquetas por tic solo codifican decisiones **locales**. El coste de oportunidad
 de quemar un voluntario en una recogida pequeña no cabe en un ranking de aristas
-individuales. Lo que cerraría el margen restante (~6 pts) no es mejorar este
-objetivo, sino atacar la miopía secuencial directamente (lookahead determinista o
-reserva explícita de capacidad).
+individuales. Y tampoco lo captura una penalización local de reserva (sección
+4.3): el margen restante (~6 pts) exige atacar la miopía secuencial con una
+visión **global** del plan, no con pesos ni reservas locales.

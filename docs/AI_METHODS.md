@@ -206,8 +206,11 @@ estable de **+0.61 a +0.82 pts**.
    **incremental**, no el salto de la IA.
 
 La vía que sí capturaría el margen restante (~6 pts) es atacar la **miopía
-secuencial** directamente (lookahead determinista o reserva explícita de
-capacidad), no mejorar el objetivo de un ranking local.
+secuencial** directamente con una visión global del plan. Se verificó que la
+reserva explícita de capacidad (penalizar al portador cap-30 en recogidas
+pequeñas) **no** funciona a escala — resta, no suma (ver `METODOLOGIA.md`,
+sección 4.3) — así que el límite no es de pesos ni de reservas locales, sino
+estructural.
 
 ---
 
