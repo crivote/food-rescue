@@ -2,10 +2,11 @@
 
 > Documento consolidado. Describe cómo se valida el motor de asignación, qué
 > límites (mínimos y máximos) se usan como referencia, y qué mejoras se
-> incorporaron tras medirlas empíricamente. Todo el vocabulario es deliberadamente
+> incorporaron tras medirlas empíricamente. El vocabulario es deliberadamente
 > neutro: se habla de "motor", "asignación", "recogidas", "voluntarios" y
-> "centros", no de modelos ni agentes, porque aquí solo hay reglas de decisión
-> deterministas y optimización combinatoria.
+> "centros". El motor publicado (secciones 1–6) es puramente determinista
+> (reglas + optimización combinatoria); la sección 7 describe un plan de
+> aprendizaje automático *en curso*, todavía no integrado en el motor.
 
 ---
 
@@ -255,6 +256,7 @@ escenarios se generan de forma determinista con el generador público
 | `solver_match.py` | Matcher base (referencia culta). |
 | `baseline_greedy.py` | Greedy del reto (referencia). |
 | `valida_beta_14.py` | Validación por pares del parámetro BETA. |
+| `etiquetar_cpsat.py` | Genera el material de entrenamiento del scorer (sección 7). |
 
 **Comandos de reproducción** (desde la raíz del repo, con `ortools` instalado):
 
@@ -289,3 +291,101 @@ El motor supera de forma consistente a ambas líneas base en los cuatro cuartile
 de dificultad, y el margen restante hasta el óptimo está **cuantificado** (~6.4
 puntos en el caso publicado, una vez corregido el modelado del origen), lo que
 permite decidir con datos si merece la pena seguir optimizando.
+
+---
+
+## 7. Plan de IA: aprendizaje por imitación del óptimo (en curso)
+
+> **Estado:** experimental, **no integrado** en el motor publicado. Esta sección
+> documenta el plan y el material ya generado; los resultados de las secciones
+> 1–6 corresponden al motor determinista consolidado.
+
+### 7.1 Motivación: por qué los pesos locales tocan techo
+
+La sección 4 mostró que el motor final (55.4%) mejora el matcher base pero no
+llega al óptimo (61.8%). El diagnóstico (sección 3.3) dejó claro dónde está el
+límite: el matcher es **local** — en cada tic optimiza el presente y no ve el
+**coste de oportunidad futuro**. Dos ejemplos concretos en el escenario
+publicado:
+
+- **Reserva de capacidad.** Un voluntario de capacidad 30 (el único con ventana
+  larga) se consume en recogidas pequeñas y luego no puede hacer las grandes que
+  solo él alcanza. El matcher local no "reserva" al voluntario capaz.
+- **Desperdicio de portador.** Un voluntario rápido y capaz se asigna a una
+  recogida diminuta, sacrificando una grande que habría podido hacer.
+
+Esto **no se arregla cambiando pesos** (sección 4.1: la modulación por escenario
+no aportó nada). Es un defecto *secuencial*, no de calibración. Las dos vías
+estudiadas para atacarlo fueron:
+
+1. **Receding-horizon con CP-SAT online.** Resolver el subproblema restante a
+   óptimo en cada tic. Funcionó (+4.3 pts en el caso publicado) pero se descartó
+   por **no-reproducibilidad**: con `num_search_workers=8` CP-SAT devuelve una
+   solución óptima distinta entre empates, y como compromete el primer movimiento
+   de cada tic, eso produce trayectorias distintas para la misma entrada.
+2. **Aprendizaje por imitación (behavioral cloning).** Aprender la *función de
+   puntuación* del óptimo, destilando un modelo determinista. Es la vía elegida.
+
+### 7.2 Arquitectura profesor–alumno
+
+```
+                    offline (una vez)                  online (runtime)
+   escenarios ──► CP-SAT (optimo_exacto.py) ──► plan óptimo
+                                                     │
+                                                     ▼ etiquetado de aristas
+                                              modelo de puntuación (scorer)
+                                                     │ pesos fijos
+                                                     ▼
+                        decidir(estado) ──► scorer ──► min-cost flow ──► asignación
+```
+
+- **Profesor.** `optimo_exacto.py` resuelve cada escenario a óptimo entero con
+  CP-SAT y produce el plan global correcto. Corre offline y es costoso (CPU,
+  NP-difícil), pero solo se ejecuta una vez por escenario.
+- **Alumno.** Un modelo de puntuación aprende a replicar la elección del
+  profesor: dado un par `(voluntario, recogida)` con sus características, predice
+  el peso que habría hecho que el profesor eligiera esa arista. Sustituye la
+  **fórmula artesanal del peso** (sección 4), no la capa de emparejamiento.
+- **Capa de emparejamiento intacta.** El `min-cost flow` (asignación bipartita)
+  que ya existe en el motor sigue traduciendo los pesos a una asignación factible.
+  Garantiza que toda salida sea válida (un voluntario un viaje, una recogida una
+  vez) y que el resultado sea determinista.
+
+**Por qué sí es determinista, a diferencia del receding-horizon.** El no-
+determinismo del CP-SAT (múltiples óptimos empatados) solo afecta al *profesor*,
+que corre offline y del que basta una solución óptima cualquiera. El *alumno*
+tiene pesos fijos, así que la cadena online `scorer → min-cost flow` produce
+siempre la misma salida para la misma entrada.
+
+### 7.3 Material de entrenamiento generado
+
+Para entrenar al alumno se generó un conjunto de escenarios resueltos a óptimo:
+
+| Magnitud | Valor |
+|---|---|
+| Escenarios generados | 600 (semillas 20300–20899, nunca usadas en validación) |
+| Resueltos a `OPTIMAL` | **572 (95.3%)** |
+| `FEASIBLE` (subóptimo, se descarta al etiquetar) | 28 (4.7%) |
+| Fallos / timeouts totales | 0 |
+| Tiempo medio por escenario | ~22.8 s (mediana ~12 s), CPU |
+
+Los planes se materializan con `etiquetar_cpsat.py` en `labels/planes.jsonl`
+(cada línea: `{semilla, status, wall, pct, gap, plan[]}`). Solo se conservan las
+semillas `OPTIMAL`; un plan subóptimo no debe enseñar al alumno.
+
+### 7.4 Pasos pendientes y criterio de aceptación
+
+1. **Etiquetado de aristas.** De cada plan óptimo, derivar qué aristas
+   `(voluntario, recogida)` eligió el profesor (positivo) y cuáles descartó
+   (negativo), junto con las **características** de cada arista (comidas,
+   duración, criticidad, tiempo restante del voluntario, cuántos otros pueden
+   hacer esa recogida, etc.).
+2. **Entrenar el scorer** sobre esas aristas etiquetadas.
+3. **Validar fuera de muestra.** Medir el % de comida rescatada del motor con el
+   scorer aprendido, en escenarios **no vistos** en el entrenamiento, contra el
+   motor actual (55.4% publicado).
+
+**Criterio de aceptación.** El scorer aprendido solo se integra si, de forma
+**reproducible y fuera de muestra**, bate al motor determinista actual sin
+degradar el peor caso. En caso contrario, se descarta y la entrega queda como
+está (el motor local ya consolidado).
