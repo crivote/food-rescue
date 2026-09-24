@@ -214,6 +214,8 @@ ml/                             ← capa de IA (aprendizaje por imitación)
     entrenar_variantes.py       ← entrena el scorer (LightGBM LambdaRank)
     solver_scorer.py            ← motor online con el scorer aprendido
     bench_estratificado.py      ← motor vs scorer fuera de muestra, por cuartiles
+explicar_decision.py            ← traduce una decisión a lenguaje natural (LLM)
+ux/index.html                   ← prototipo de app de voluntario (sin build)
 ```
 
 ## Visión de producto — del simulador al sistema real
@@ -238,6 +240,14 @@ información.
 El motor de este repositorio es directamente reutilizable como el núcleo de
 decisión de ese sistema: la interfaz `decidir(estado)` no cambia; solo cambia
 quién produce el `estado` (el simulador, o la API en tiempo real del sistema).
+
+Como muestra del salto a producto, `ux/index.html` es un prototipo estático de
+la app del voluntario (HTML + CSS + JS vanilla, sin build) que reproduce el
+flujo *misión → aceptar → recoger → entregar → recompensa*, con gamificación de
+puntos y la explicación de por qué se asignó cada recogida. Esa explicación no
+está hardcodeada: `explicar_decision.py` la genera traduciendo el contexto de
+decisión del motor a lenguaje natural con un LLM barato (mecanismo descrito en
+[`docs/AI_METHODS.md`](docs/AI_METHODS.md), §9).
 
 ## Licencia
 

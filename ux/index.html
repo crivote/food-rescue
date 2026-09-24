@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rescate · voluntario</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --surface: #ffffff;
+    --surface-2: #faf9f6;
+    --fg: #1a1a1a;
+    --muted: #6b6761;
+    --faint: #9a958b;
+    --line: #e5e1d9;
+    --accent: #2e7d4f;
+    --accent-ink: #235e3b;
+    --accent-soft: #e8f2eb;
+    --gold: #b7791f;
+    --gold-soft: #f6eedd;
+    --danger: #a33b3b;
+    --danger-soft: #f7ecec;
+    --radius: 14px;
+    --radius-s: 9px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #e9e5dd;
+    color: var(--fg);
+    line-height: 1.45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .phone {
+    width: 100%;
+    max-width: 430px;
+    height: min(820px, 94vh);
+    background: var(--bg);
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 2px 10px rgba(0,0,0,.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .appbar {
+    padding: 16px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .dot {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: var(--accent); color: #fff;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .brand .name { font-weight: 650; font-size: 16px; }
+  .brand .sub { font-size: 12px; color: var(--muted); }
+  .points-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; color: var(--gold);
+    background: var(--gold-soft); border: 1px solid #e8d7b0;
+    padding: 6px 11px; border-radius: 999px;
+  }
+  .points-pill svg { display: block; }
+
+  /* tira de turno (información persistente) */
+  .shift-strip {
+    margin: 0 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .shift-strip .clock { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .level-track { flex: 1; }
+  .level-track .lvl-line {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted); margin-bottom: 4px;
+  }
+  .level-track .lvl-line b { color: var(--accent-ink); }
+  .lvl-bar { height: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lvl-bar .fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s ease; }
+
+  .screen {
+    flex: 1; overflow-y: auto;
+    padding: 4px 20px 20px;
+    display: flex; flex-direction: column;
+    gap: 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .kicker { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+  .title { font-size: 22px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+  .subtitle { font-size: 14px; color: var(--muted); }
+
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip {
+    font-size: 12px; color: var(--muted); background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: var(--radius-s);
+    padding: 5px 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .chip b { color: var(--fg); font-weight: 650; }
+  .reward-chip {
+    color: var(--gold); background: var(--gold-soft);
+    border-color: #e8d7b0; font-weight: 700;
+  }
+  .rationale {
+    margin-top: 12px; background: var(--accent-soft);
+    border: 1px solid #cfe3d5; border-radius: var(--radius-s);
+    padding: 11px 13px; font-size: 13px; color: var(--accent-ink);
+  }
+  .rationale .lbl { display: flex; align-items: center; gap: 6px; font-weight: 650; font-size: 12px; margin-bottom: 3px; }
+  .rationale svg { flex: 0 0 auto; }
+
+  .actions { display: flex; gap: 10px; margin-top: 4px; }
+  .btn {
+    flex: 1; border: none; border-radius: var(--radius-s);
+    padding: 14px; font-size: 15px; font-weight: 650; cursor: pointer;
+    transition: transform .05s ease, background .15s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-ink); }
+  .btn-ghost { background: var(--surface); color: var(--danger); border: 1px solid var(--line); }
+  .btn-ghost:hover { background: var(--danger-soft); }
+
+  .mapwrap { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #eef0eb; }
+  .mapwrap svg { display: block; width: 100%; height: auto; }
+  .maplabel { font-size: 10px; fill: var(--muted); font-weight: 600; }
+  .eta {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(255,255,255,.92); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 12px; font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .eta b { font-weight: 700; }
+  .progress { height: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .progress .bar { height: 100%; background: var(--accent); width: 0%; transition: width .2s linear; border-radius: 999px; }
+
+  .big { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
+  .unit { font-size: 15px; color: var(--muted); font-weight: 500; }
+
+  /* impacto / recompensa */
+  .impact { text-align: center; padding: 22px 16px; }
+  .impact .ring { width: 84px; height: 84px; border-radius: 50%; background: var(--accent-soft); border: 2px solid #cfe3d5; display: grid; place-items: center; margin: 0 auto 12px; }
+  .impact .ring svg { display: block; }
+  .stat { font-size: 34px; font-weight: 700; color: var(--accent-ink); }
+  .points-earned { font-size: 15px; font-weight: 700; color: var(--gold); }
+  .count-up { font-variant-numeric: tabular-nums; }
+
+  .badge-banner {
+    margin-top: 12px; background: var(--gold-soft); border: 1px solid #e8d7b0;
+    border-radius: var(--radius-s); padding: 11px 13px;
+    display: flex; align-items: center; gap: 10px; text-align: left;
+  }
+  .badge-banner .medal {
+    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--gold); color: #fff; display: grid; place-items: center;
+    font-size: 16px; font-weight: 700;
+  }
+  .badge-banner .bd-title { font-weight: 700; font-size: 13px; color: var(--gold); }
+  .badge-banner .bd-sub { font-size: 12px; color: var(--muted); }
+
+  .goal-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .goal-row .g-num { font-weight: 700; color: var(--accent-ink); }
+
+  .footer-note { font-size: 11px; color: var(--faint); text-align: center; padding: 0 8px 14px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="appbar">
+      <div class="brand">
+        <div class="dot">R</div>
+        <div>
+          <div class="name">Rescate</div>
+          <div class="sub">excedente alimentario</div>
+        </div>
+      </div>
+      <div class="points-pill" id="pointsPill">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 9l-5.2 4 1.6 6.6L12 16l-5.4 3.6L8.2 13 3 9l6.6-.4L12 2z"/></svg>
+        <span id="pointsNum">0</span>&nbsp;pts
+      </div>
+    </div>
+
+    <div class="shift-strip">
+      <div class="clock" id="clock">19:00</div>
+      <div class="level-track">
+        <div class="lvl-line">
+          <span id="levelLabel">Nivel 3 · Voluntario</span>
+          <b id="turnoLabel">turno 19:30–21:30</b>
+        </div>
+        <div class="lvl-bar"><div class="fill" id="lvlFill"></div></div>
+      </div>
+    </div>
+
+    <div id="app" class="screen"></div>
+
+    <div class="footer-note">Prototipo de interacción · datos de un turno simulado (Madrid)</div>
+  </div>
+
+<script>
+/* ============ Datos reales del escenario sample_01 (harness) ============ */
+const BBOX = { latMin: 40.33, latMax: 40.51, lonMin: -3.82, lonMax: -3.58 };
+
+const RECOGIDAS = [
+  ["r00",40.48254,-3.63669,15],["r01",40.46697,-3.70666,20],["r02",40.34689,-3.8132,20],
+  ["r03",40.46721,-3.81949,25],["r04",40.47433,-3.67812,8],["r05",40.33551,-3.81389,30],
+  ["r06",40.48862,-3.65524,20],["r07",40.42497,-3.63671,25],["r08",40.39223,-3.65756,25],
+  ["r09",40.49677,-3.72012,30],["r10",40.348,-3.66896,15],["r11",40.38989,-3.64684,30],
+  ["r12",40.40598,-3.62079,12],["r13",40.43576,-3.60821,30],["r14",40.48359,-3.70475,20],
+  ["r15",40.36114,-3.68829,18],["r16",40.44948,-3.7941,10],["r17",40.40079,-3.70247,6],
+  ["r18",40.38554,-3.61641,20],["r19",40.36035,-3.76554,6],["r20",40.42713,-3.61353,12],
+  ["r21",40.39189,-3.61661,18],["r22",40.37847,-3.68848,6],["r23",40.48425,-3.59088,30],
+  ["r24",40.42336,-3.68527,20],["r25",40.4166,-3.73246,30],["r26",40.42085,-3.70362,18],
+  ["r27",40.33029,-3.69037,18],["r28",40.33504,-3.76489,10],["r29",40.36254,-3.79802,30],
+  ["r30",40.47696,-3.75873,8],["r31",40.333,-3.81651,15],["r32",40.34971,-3.67005,18],
+  ["r33",40.36014,-3.75875,10],["r34",40.44668,-3.74932,18],["r35",40.35055,-3.74512,18],
+  ["r36",40.36385,-3.7939,30],["r37",40.5038,-3.7164,6],["r38",40.40152,-3.81152,10],
+  ["r39",40.42114,-3.7176,12],["r40",40.44354,-3.65319,25],["r41",40.44673,-3.72522,18],
+  ["r42",40.40673,-3.64301,10]
+];
+
+const VOLUNTARIOS = [
+  ["v00",40.4876,-3.74647,25],["v01",40.46389,-3.72012,20],["v02",40.43093,-3.61587,30],
+  ["v03",40.47902,-3.61123,30],["v04",40.39245,-3.77062,20],["v05",40.3488,-3.66017,30],
+  ["v06",40.38856,-3.61081,15],["v07",40.36615,-3.74134,25],["v08",40.36835,-3.65813,25],
+  ["v09",40.46823,-3.6922,15],["v10",40.35394,-3.78003,25]
+];
+
+const CENTROS = [
+  ["c0",40.46664,-3.67595],["c1",40.4814,-3.73165],["c2",40.39125,-3.75011],
+  ["c3",40.48614,-3.67504],["c4",40.50178,-3.60706],["c5",40.35436,-3.68772]
+];
+
+/* Voluntario v05 (el caso de reserva de capacidad del motor) */
+const YO = { id: "v05", pos: [40.3488, -3.66017], velocidad: 13, capacidad: 30,
+             desde: 1170, hasta: 1290 };
+const MISION = { recogida: "r25", pos: [40.4166, -3.73246], comidas: 30, caduca: 1288,
+                 centro: "c2", cpos: [40.39125, -3.75011] };
+
+/* ============ Sistema de recompensa / gamificación ============ */
+const PTS_POR_RACION = 10;
+const NIVELES = [          // [umbral de puntos, nombre]
+  [0,   "Nivel 1 · Novato"],
+  [150, "Nivel 2 · Colaborador"],
+  [400, "Nivel 3 · Voluntario"],
+  [900, "Nivel 4 · Rescatador"],
+  [1500,"Nivel 5 · Líder de turno"]
+];
+const OBJETIVO_TURNO = 50; // raciones a salvar en este turno para la insignia
+
+let puntos = 260;            // puntos acumulados antes de esta misión
+let racionesTurno = 20;      // raciones ya salvadas este turno
+let objetivoLogrado = false;
+
+/* ============ Utilidades ============ */
+function proj(lat, lon) {
+  const x = (lon - BBOX.lonMin) / (BBOX.lonMax - BBOX.lonMin) * 800;
+  const y = (BBOX.latMax - lat) / (BBOX.latMax - BBOX.latMin) * 600;
+  return { x, y };
+}
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function minToHHMM(min) {
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+}
+function nivelInfo(pts) {
+  let idx = 0;
+  for (let i = 0; i < NIVELES.length; i++) if (pts >= NIVELES[i][0]) idx = i;
+  const [umbral, nombre] = NIVELES[idx];
+  const next = NIVELES[idx + 1];
+  const prog = next ? (pts - umbral) / (next[0] - umbral) : 1;
+  return { idx, nombre, prog: Math.min(prog, 1) };
+}
+
+/* ============ Estado ============ */
+const app = document.getElementById("app");
+let anim = null;
+let currentMin = 1140;
+
+function refreshHeader() {
+  document.getElementById("pointsNum").textContent = puntos;
+  const info = nivelInfo(puntos);
+  document.getElementById("levelLabel").textContent = info.nombre;
+  document.getElementById("lvlFill").style.width = (info.prog * 100) + "%";
+}
+function setClock(min) { document.getElementById("clock").textContent = minToHHMM(min); }
+function clearAnim() { if (anim) { cancelAnimationFrame(anim); anim = null; } }
+function turnoRestante() { return Math.max(0, YO.hasta - currentMin); }
+
+/* ============ Pantallas ============ */
+function renderMission() {
+  clearAnim();
+  const tViaje = Math.round(haversineKm(YO.pos[0], YO.pos[1], MISION.pos[0], MISION.pos[1]) / YO.velocidad * 60);
+  const premio = MISION.comidas * PTS_POR_RACION;
+  app.innerHTML = `
+    <div class="card">
+      <div class="kicker">Nueva misión asignada</div>
+      <div class="title" style="margin-top:4px">Recogida de ${MISION.comidas} raciones</div>
+      <div class="subtitle" style="margin-top:4px">Recogida <b>${MISION.recogida}</b> · entrega en centro <b>${MISION.centro}</b></div>
+      <div class="meta">
+        <div class="chip"><span>🥫</span><b>${MISION.comidas}</b>&nbsp;raciones</div>
+        <div class="chip"><span>🕐</span>caduca <b>${minToHHMM(MISION.caduca)}</b></div>
+        <div class="chip"><span>🚲</span><b>${tViaje}</b> min de viaje</div>
+        <div class="chip reward-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 9l-5.2 4 1.6 6.6L12 16l-5.4 3.6L8.2 13 3 9l6.6-.4L12 2z"/></svg>+${premio} pts</div>
+      </div>
+      <div class="rationale">
+        <div class="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.6 4.9L19 8l-4.4 3.2L16 16l-4-2.5L8 16l1.4-4.8L5 8l5.4-1.1L12 2z"/></svg>Por qué esta misión</div>
+        Por tu capacidad de transporte (puedes llevar hasta <b>${YO.capacidad} raciones</b>), eres uno de los pocos voluntarios de la zona que puede recoger esta donación importante antes de que caduque. ¡Contamos contigo!
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kicker">Tu turno</div>
+      <div class="goal-row" style="margin-top:6px">
+        <span>Objetivo del turno · salvar <b>${OBJETIVO_TURNO}</b> raciones</span>
+        <span class="g-num">${racionesTurno}/${OBJETIVO_TURNO}</span>
+      </div>
+      <div class="progress" style="margin-top:8px"><div class="bar" style="width:${(racionesTurno/OBJETIVO_TURNO*100)}%"></div></div>
+      <div class="goal-row" style="margin-top:10px">
+        <span>Turno restante</span>
+        <span class="g-num">${minToHHMM(YO.hasta)} · ${turnoRestante()} min</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="renderDecline()">Rechazar</button>
+      <button class="btn btn-primary" onclick="accept()">Aceptar misión</button>
+    </div>
+  `;
+}
+
+function renderDecline() {
+  clearAnim();
+  app.innerHTML = `
+    <div class="card impact">
+      <div class="ring"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#a33b3b" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM8 8l8 8M16 8l-8 8"/></svg></div>
+      <div class="title">Misión rechazada</div>
+      <div class="subtitle" style="margin-top:6px">El motor reasignará esta recogida a la siguiente opción disponible. En esta demo no hay otra persona capaz a tiempo, así que esas 30 raciones se perderían.</div>
+    </div>
+    <button class="btn btn-primary" onclick="renderMission()">Volver</button>
+  `;
+}
+
+function accept() {
+  clearAnim();
+  transit(MISION.pos, "Recogida", () => renderPickup());
+}
+
+function transit(to, objetivo, onArrive) {
+  const from = [currentLat, currentLon];
+  const km = haversineKm(from[0], from[1], to[0], to[1]);
+  const durMin = km / YO.velocidad * 60;
+  const animSec = Math.min(durMin * 0.22, 12);
+  const start = performance.now();
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="kicker">En camino</div>
+      <div class="title" style="margin-top:4px">Hacia la ${objetivo.toLowerCase()}</div>
+      <div class="subtitle" style="margin-top:4px">${Math.round(km*10)/10} km · llega en unos ${Math.round(durMin)} min</div>
+    </div>
+    <div class="eta"><b id="etaTxt">${Math.round(durMin)} min</b> restantes</div>
+    <div class="mapwrap" id="mapWrap"></div>
+    <div class="progress"><div class="bar" id="prog"></div></div>
+  `;
+
+  const wrap = document.getElementById("mapWrap");
+  const svg = buildMap(from, to);
+  wrap.appendChild(svg);
+  const marker = wrap.querySelector("#self");
+
+  let p0 = proj(from[0], from[1]), p1 = proj(to[0], to[1]);
+
+  function frame(now) {
+    const t = Math.min((now - start) / (animSec * 1000), 1);
+    const x = p0.x + (p1.x - p0.x) * t;
+    const y = p0.y + (p1.y - p0.y) * t;
+    marker.setAttribute("cx", x);
+    marker.setAttribute("cy", y);
+    document.getElementById("prog").style.width = (t * 100) + "%";
+    document.getElementById("etaTxt").textContent = Math.round(durMin * (1 - t)) + " min";
+    if (t < 1) {
+      anim = requestAnimationFrame(frame);
+    } else {
+      currentLat = to[0]; currentLon = to[1];
+      onArrive();
+    }
+  }
+  anim = requestAnimationFrame(frame);
+}
+
+function buildMap(from, to) {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 800 600");
+
+  const add = (tag, attrs) => {
+    const el = document.createElementNS(ns, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    svg.appendChild(el);
+    return el;
+  };
+
+  RECOGIDAS.forEach(([id, la, lo, n]) => {
+    const p = proj(la, lo);
+    const mine = id === MISION.recogida;
+    add("circle", { cx: p.x, cy: p.y, r: mine ? 7 : 3.2,
+      fill: mine ? "#2e7d4f" : "#c7c2b8", stroke: mine ? "#fff" : "none", "stroke-width": mine ? 2 : 0 });
+    if (mine) add("text", { x: p.x, y: p.y - 12, "text-anchor": "middle", class: "maplabel", fill: "#235e3b" }).textContent = id;
+  });
+
+  CENTROS.forEach(([id, la, lo]) => {
+    const p = proj(la, lo);
+    const dest = id === MISION.centro;
+    add("rect", { x: p.x - 6, y: p.y - 6, width: 12, height: 12, rx: 3,
+      fill: dest ? "#b7791f" : "#d8d2c7", stroke: "#fff", "stroke-width": 1.5 });
+    add("text", { x: p.x, y: p.y + 20, "text-anchor": "middle", class: "maplabel" }).textContent = id;
+  });
+
+  VOLUNTARIOS.forEach(([id, la, lo]) => {
+    if (id === YO.id) return;
+    const p = proj(la, lo);
+    add("circle", { cx: p.x, cy: p.y, r: 3.5, fill: "#9aa3b2", opacity: .7 });
+  });
+
+  const p0 = proj(from[0], from[1]), p1 = proj(to[0], to[1]);
+  add("path", { id: "route", d: `M ${p0.x} ${p0.y} L ${p1.x} ${p1.y}`,
+    stroke: "#2e7d4f", "stroke-width": 2.5, "stroke-dasharray": "6 6", fill: "none", opacity: .8 });
+
+  add("circle", { id: "self", cx: p0.x, cy: p0.y, r: 8, fill: "#1a1a1a", stroke: "#fff", "stroke-width": 2.5 });
+
+  return svg;
+}
+
+function renderPickup() {
+  clearAnim();
+  app.innerHTML = `
+    <div class="card">
+      <div class="kicker">Has llegado</div>
+      <div class="title" style="margin-top:4px">Recoge la comida</div>
+      <div class="subtitle" style="margin-top:4px">Confirmar que cargas las <b>${MISION.comidas} raciones</b> de ${MISION.recogida}.</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="kicker">Carga confirmada</div>
+      <div class="big">${MISION.comidas}</div>
+      <div class="unit">raciones en tu caja</div>
+    </div>
+    <button class="btn btn-primary" onclick="deliverLeg()">Entregar en ${MISION.centro}</button>
+  `;
+}
+
+function deliverLeg() {
+  clearAnim();
+  transit(MISION.cpos, "Centro " + MISION.centro, () => renderDeliver());
+}
+
+function renderDeliver() {
+  clearAnim();
+  currentMin = MISION.caduca - 40;
+  setClock(currentMin);
+  app.innerHTML = `
+    <div class="card">
+      <div class="kicker">Centro ${MISION.centro}</div>
+      <div class="title" style="margin-top:4px">Entrega completada</div>
+      <div class="subtitle" style="margin-top:4px">Las ${MISION.comidas} raciones quedan registradas en el banco de alimentos.</div>
+    </div>
+    <button class="btn btn-primary" onclick="renderImpact()">Ver recompensa</button>
+  `;
+}
+
+function renderImpact() {
+  clearAnim();
+  const premio = MISION.comidas * PTS_POR_RACION;
+  racionesTurno += MISION.comidas;
+  const nuevoPuntos = puntos + premio;
+  const antes = nivelInfo(puntos).idx;
+  const despues = nivelInfo(nuevoPuntos).idx;
+  const subioNivel = despues > antes;
+  const alcanzoObjetivo = !objetivoLogrado && racionesTurno >= OBJETIVO_TURNO;
+  if (alcanzoObjetivo) objetivoLogrado = true;
+  puntos = nuevoPuntos;
+  refreshHeader();
+
+  const bannerNivel = subioNivel ? `
+    <div class="badge-banner">
+      <div class="medal">↑</div>
+      <div><div class="bd-title">¡Has subido de nivel!</div>
+      <div class="bd-sub">${nivelInfo(puntos).nombre}</div></div>
+    </div>` : "";
+  const bannerObjetivo = alcanzoObjetivo ? `
+    <div class="badge-banner">
+      <div class="medal">🏅</div>
+      <div><div class="bd-title">Objetivo del turno cumplido</div>
+      <div class="bd-sub">${OBJETIVO_TURNO} raciones salvadas en este turno</div></div>
+    </div>` : "";
+
+  app.innerHTML = `
+    <div class="card impact">
+      <div class="ring"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2e7d4f" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="stat">${MISION.comidas} raciones</div>
+      <div class="subtitle">salvadas antes de caducar · ${minToHHMM(MISION.caduca)}</div>
+      <div class="points-earned count-up" id="countUp">+0 pts</div>
+      ${bannerNivel}${bannerObjetivo}
+    </div>
+
+    <div class="card">
+      <div class="kicker">Tu progreso</div>
+      <div class="goal-row" style="margin-top:6px">
+        <span>Objetivo del turno · ${OBJETIVO_TURNO} raciones</span>
+        <span class="g-num">${racionesTurno}/${OBJETIVO_TURNO}</span>
+      </div>
+      <div class="progress" style="margin-top:8px"><div class="bar" style="width:${(racionesTurno/OBJETIVO_TURNO*100)}%"></div></div>
+      <div class="goal-row" style="margin-top:10px">
+        <span>Puntos totales</span>
+        <span class="g-num">${puntos} pts</span>
+      </div>
+      <div class="goal-row" style="margin-top:6px">
+        <span>Turno restante</span>
+        <span class="g-num">${turnoRestante()} min</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="rationale" style="margin-top:0">
+        <div class="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.6 4.9L19 8l-4.4 3.2L16 16l-4-2.5L8 16l1.4-4.8L5 8l5.4-1.1L12 2z"/></svg>Cómo encaja en el turno</div>
+        Esta era la recogida que el motor reservaba para ti: la mayor que podías cargar con tu capacidad y aún a tiempo. Otras misiones más pequeñas se repartieron entre el resto de personas.
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="restart()">Simular siguiente misión</button>
+  `;
+
+  // animación de cuenta de puntos
+  const el = document.getElementById("countUp");
+  const dur = 700, t0 = performance.now();
+  function tick(now) {
+    const t = Math.min((now - t0) / dur, 1);
+    el.textContent = "+" + Math.round(premio * t) + " pts";
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function restart() {
+  currentLat = YO.pos[0]; currentLon = YO.pos[1];
+  currentMin = 1140; setClock(currentMin);
+  renderMission();
+}
+
+/* ============ Arranque ============ */
+let currentLat = YO.pos[0], currentLon = YO.pos[1];
+setClock(currentMin);
+refreshHeader();
+renderMission();
+</script>
+</body>
+</html>

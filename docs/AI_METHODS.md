@@ -208,3 +208,75 @@ estable de **+0.61 a +0.82 pts**.
 La vía que sí capturaría el margen restante (~6 pts) es atacar la **miopía
 secuencial** directamente (lookahead determinista o reserva explícita de
 capacidad), no mejorar el objetivo de un ranking local.
+
+---
+
+## 9. Transparencia (XAI) — decisión de diseño
+
+Evaluamos la propuesta de usar **SHAP** (valores de Shapley) para explicar las
+decisiones y cerrar el bloque de "IA responsable" del reto. **Conclusión: no se
+aplica al motor, y en el scorer aporta poco más que la explicación analítica
+que ya tenemos.**
+
+- **El motor determinista no es un modelo que SHAP pueda explicar.** La función
+  de peso es una fórmula aritmética de 4 factores, transparente por
+  construcción: `peso = (raciones/min) × escasez × desierto × cercanía`. SHAP
+  descompone la salida de un *modelo* en contribuciones de *features*; no hay
+  features aprendidas en el motor, así que su explicación natural es la propia
+  fórmula, no una descomposición de Shapley forzada.
+- **En el scorer sí tendría sentido técnico** (`TreeExplainer` sobre el Booster
+  LightGBM), pero el coste supera el valor: lo que importa en runtime es que el
+  min-cost flow maximice la suma de scores, y el *porqué* de cada score ya se
+  lee en la lista de 25 features. SHAP sería una visualización *post-hoc* — no
+  participa en la decisión, así que no suma al criterio de "IA fundamental".
+- **La transparencia que sí aporta valor es traducir la decisión a lenguaje
+  natural.** En el prototipo de UX (`ux/`), la tarjeta de misión explica *por
+  qué* se asignó esa recogida a ese voluntario. Esa frase no es un texto
+  hardcodeado: la genera un **mecanismo** reproducible (`explicar_decision.py`),
+  descrito a continuación.
+
+### 9.1 Mecanismo de conversión a lenguaje natural
+
+El motor ya computa, al decidir, los campos que *justifican* la asignación
+(raciones, capacidad del voluntario, cuántos voluntarios podían llevar esa
+recogida —el `n_cap` de la criticidad— y cuánto falta para que caduque). Esos
+campos forman un **contexto de decisión estructurado**. La conversión a frase
+natural es un pipeline de tres pasos, donde el LLM solo *traduce*, sin intervenir
+en la decisión:
+
+```
+contexto JSON ──► prompt few-shot ──► LLM barato ──► frase natural
+ (del motor)       (2 ejemplos)       (LLM barato)
+                                         │ fallo de red/clave
+                                         ▼
+                                  plantilla determinista
+```
+
+- **Contexto.** `solver_match_crit.py` expone, para cada asignación, un JSON con
+  `{raciones, capacidad_voluntario, voluntarios_capaces, min_para_caducar}` — los
+  mismos valores que entran en la fórmula del peso, sin jerga.
+- **Prompt few-shot.** `explicar_decision.py` mete ese JSON en un prompt con dos
+  ejemplos `contexto → frase`, instruyendo a no usar términos técnicos y a no
+  inventar datos. Los ejemplos enseñan a distinguir *escasez* ("eres el único")
+  de *urgencia* ("caduca en 20 min").
+- **Modelo.** Un LLM ligero a través de un endpoint OpenAI-compatible
+  (configurado por variables de entorno `LLM_ENDPOINT` / `LLM_MODEL` /
+  `LLM_API_KEY`; ninguna credencial ni nombre de proveedor va en el código). Una
+  llamada de ~1 s y ~120 tokens por explicación.
+- **Fallback determinista.** Si no hay red o clave, devuelve una plantilla
+  equivalente (nunca deja de responder), marcando el aviso en `stderr`.
+
+**Salida real verificada** (dos casos, LLM ligero OpenAI-compatible):
+
+| Contexto | Frase generada |
+|---|---|
+| 30 raciones · cap 30 · 1 capaz · 45 min | «Eres la única persona capaz de recoger estas 30 raciones antes de que caduquen, ¡gracias por ayudarnos!» |
+| 18 raciones · cap 25 · 3 capaces · 20 min | «Te hemos asignado estas 18 raciones porque tienes capacidad para llevarlas y quedan solo 20 minutos para que caduquen.» |
+
+El segundo caso demuestra generalización (no repetición del ejemplo): ante tres
+voluntarios capaces el modelo explica por *urgencia* en lugar de por *escasez*.
+
+Se descarta SHAP como núcleo de la propuesta; queda registrada como opción
+explorada, con la razón de su descarte. La explicabilidad real de cara al
+usuario es este pipeline de traducción, que es transparente por construcción y
+no participa en la decisión.
