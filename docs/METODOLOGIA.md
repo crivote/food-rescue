@@ -167,25 +167,28 @@ margen se mide directamente, solo sobre las semillas donde el solver alcanzó
 
 | Magnitud (escenario publicado, `sample_01`) | Valor |
 |---|---|
-| Motor final | **55.4%** (429 raciones) |
+| Motor determinista final | **55.4%** (429 raciones) |
+| **Solucionador integrado (la entrega)** | **58.5%** (453 raciones) |
 | Óptimo entero sin cancelaciones (origen exacto) | **64.6%** (501/775) |
 | **Óptimo entero real** (con cancelaciones) | **61.8%** (479/775) |
 | Plan "sin cancelaciones" ejecutado a ciegas en el harness | 54.8% (425/775) |
-| Margen capturable real | **+6.4 pts** |
+| Margen capturable del motor | **+6.4 pts** |
+| **Margen capturable del solucionador integrado** | **+3.3 pts** |
 
 **Lectura de los dos óptimos.** El óptimo *sin* cancelaciones (64.6%) asume que
 los 11 voluntarios trabajan toda su ventana. El óptimo *con* cancelaciones
 (61.8%) es el número real: incorpora que v02 y v07 se caen a las 19:40. La
 diferencia entre ambos (2.8 pts) es el coste estructural de perder dos
 voluntarios. El dato de que un plan calculado *sin* saber de las cancelaciones y
-ejecutado a ciegas rinde solo 54.8% (por debajo del propio motor, 55.4%)
-confirma que **la incertidumbre de las cancelaciones es el factor que obliga a
-replanificar en caliente**, no un plan único al inicio.
+ejecutado a ciegas rinde solo 54.8% (por debajo tanto del motor, 55.4%, como del
+integrado, 58.5%) confirma que **la incertidumbre de las cancelaciones es el
+factor que obliga a replanificar en caliente**, no un plan único al inicio.
 
-**Conclusión del umbral máximo:** el motor final (55.4%) está a **+6.4 puntos**
-del óptimo alcanzable real (61.8%) en el escenario publicado. Hay margen real de
-mejora, finito y medible — y se reporta **solo sobre la muestra de soluciones
-óptimas**, no como una extrapolación.
+**Conclusión del umbral máximo:** el motor determinista (55.4%) está a **+6.4
+puntos** del óptimo alcanzable real (61.8%) en el escenario publicado, y el
+solucionador integrado **recorta ese margen a +3.3 puntos** (58.5%). Hay margen
+real de mejora, finito y medible — y se reporta **solo sobre la muestra de
+soluciones óptimas**, no como una extrapolación.
 
 ### 3.4 Regresión del techo (explorada y descartada por error alto)
 
@@ -438,8 +441,9 @@ permite decidir con datos si merece la pena seguir optimizando.
 La sección 4 mostró que el motor final (55.4%) mejora el matcher base pero no
 llega al óptimo (61.8%). El diagnóstico (sección 3.3) dejó claro dónde está el
 límite: el matcher es **local** — en cada tic optimiza el presente y no ve el
-**coste de oportunidad futuro**. Dos ejemplos concretos en el escenario
-publicado:
+**coste de oportunidad futuro**. (El resultado medido de esta vía, sección 7.6,
+es un solucionador integrado que alcanza 58.5% en ese mismo escenario.) Dos
+ejemplos concretos en el escenario publicado:
 
 - **Reserva de capacidad.** Un voluntario de capacidad 30 (el único con ventana
   larga) se consume en recogidas pequeñas y luego no puede hacer las grandes que
@@ -589,3 +593,29 @@ No es un trade-off: es una mejora "gratuita" de cola con coste nulo en media.
 Implementado en `ml/solver_scorer.py` (`decidir(estado)` calcula scorer y motor
 en paralelo y aplica la regla); configurable por `GUARDRAIL` / `GUARDRAIL_GRANDE`
 / `GUARDRAIL_PEQUENA`. Detalle completo en `AI_METHODS.md` §10.
+
+### 7.6 El solucionador integrado sobre el escenario publicado
+
+Las mediciones de 7.4 y 7.5 son sobre conjuntos amplios (1200 y 800 semillas),
+que es lo correcto para afirmar que una mejora es **estable**. El escenario
+publicado (`sample_01`) es una semilla concreta, y el evaluador corre sobre
+semillas concretas, así que conviene reportar también su cifra exacta:
+
+| Solucionador (`sample_01`, 775 raciones) | % salvado | Raciones | Comidas/hora |
+|---|---|---|---|
+| Matcher base (`solver_match.py`) | 53.2% | 412 | 27.8 |
+| Motor determinista (`solver_match_crit.py`) | 55.4% | 429 | 26.9 |
+| **Solucionador integrado** (`ml/solver_scorer.py`) | **58.5%** | **453** | 25.2 |
+
+El integrado salva **24 raciones más** que el motor determinista en el escenario
+publicado (+3.1 pts), una mejora mayor que la media fuera de muestra (+0.89 pts):
+en esta semilla concreta el scorer acierta decisiones que el matcher local
+sacrificaba, y el guardrail no tiene que intervenir. Es la cifra que reproduce el
+comando de la sección *Ejecución* del README, y se verificó **idéntica en dos
+ejecuciones consecutivas** (determinismo).
+
+> Nota sobre el desempate: el integrado reparte **más horas de voluntariado**
+> (17.98 h frente a 15.95 h del motor) para salvar más raciones, lo que baja su
+> ratio de comidas/hora (25.2 vs 26.9). Es el comportamiento correcto: la métrica
+> principal es el porcentaje salvado y `comidas_por_hora` solo desempata cuando
+> hay empate, situación que aquí no se da.

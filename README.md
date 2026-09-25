@@ -4,14 +4,18 @@ Solución para el reto **AI for Action** (<https://aiforaction.tech/comida>): as
 comida perecedera de supermercados a bancos de alimentos en una tarde, contra un
 simulador de eventos discretos.
 
-La entrega es un **motor de asignación determinista** (`solver_match_crit.py`): un
-emparejamiento de coste mínimo que se re-ejecuta en cada tic del simulador (5
-minutos), con tres reglas de priorización calibradas empíricamente. No usa ningún
-modelo externo ni dependencia fuera de la biblioteca estándar de Python. Existe,
-además, una capa de IA **integrada** (aprendizaje por imitación) como solucionador
-unificado `ml/solver_scorer.py`, que combina la decisión del scorer con un
-**guardrail** de cola que devuelve al motor determinista en caso de desperdicio de
-portador, documentada en [`docs/AI_METHODS.md`](docs/AI_METHODS.md).
+La entrega es un **solucionador unificado** (`ml/solver_scorer.py`): una capa de IA
+**integrada** (aprendizaje por imitación) que combina un modelo de puntuación
+(scorer, LightGBM LambdaRank) con un **guardrail** determinista de cola que
+devuelve la decisión al motor de reglas en caso de desperdicio de portador.
+Sobre el escenario publicado salva el **58.5%** de la comida. Por debajo hay dos
+piezas que se mantienen en el repo y son reproducibles de forma independiente: el
+**motor de asignación determinista** (`solver_match_crit.py`) —un emparejamiento
+de coste mínimo que se re-ejecuta en cada tic del simulador (5 minutos), con tres
+reglas de priorización calibradas empíricamente y **solo biblioteca estándar de
+Python**— y el **scorer** por separado. El método de IA está documentado en
+[`docs/AI_METHODS.md`](docs/AI_METHODS.md) y la validación en
+[`docs/METODOLOGIA.md`](docs/METODOLOGIA.md).
 
 ---
 
@@ -38,20 +42,23 @@ motor— está en [`ux/README.md`](ux/README.md).
 
 ## TL;DR — qué es real, qué es simulado y qué fuentes usamos
 
-**Qué funciona de verdad.** El motor (`solver_match_crit.py`) es código real,
-determinista y autocontenido (solo biblioteca estándar de Python). No es un plan
-precalculado ni un script que devuelva valores fijos: en cada tic del simulador
-recibe el estado completo, resuelve un emparejamiento de coste mínimo y devuelve
-las asignaciones de ese instante. Es reproducible — la misma entrada produce
-siempre la misma salida — y nada está inventado ni ajustado a mano por escenario.
+**Qué funciona de verdad.** El solucionador de la entrega
+(`ml/solver_scorer.py`) es código real y **determinista**: no es un plan
+precalculado ni un script que devuelva valores fijos. En cada tic del simulador
+puntúa las aristas candidatas con el modelo aprendido y resuelve un emparejamiento
+de coste mínimo; el guardrail devuelve el tic al motor de reglas cuando detecta un
+desperdicio de portador. El motor determinista (`solver_match_crit.py`) es la base
+de la que hereda esa salvaguarda y se ejecuta solo con la biblioteca estándar. La
+misma entrada produce siempre la misma salida — se verificó ejecutando dos veces y
+obteniendo 58.5% idéntico — y nada está inventado ni ajustado a mano por escenario.
 
 **Qué está simulado.** Los *resultados* (el porcentaje de comida salvada) se miden
 sobre el simulador de eventos discretos del reto, no sobre entregas reales de
 comida. El escenario publicado (`sample_01`) y los 2000 escenarios de validación
 provienen del generador oficial del reto (`generar_escenario.py`, determinista y
-con semilla fija). El 55.4% del escenario publicado es la salida real de ese
-simulador ejecutando nuestro motor, reproducible con el comando de la sección
-*Ejecución*.
+con semilla fija). El **58.5%** del escenario publicado es la salida real de ese
+simulador ejecutando el solucionador integrado, reproducible con el comando de la
+sección *Ejecución*.
 
 **Qué fuentes usamos.** Ninguna teórica — ni papers ni fórmulas tomadas de la
 literatura. Toda la calibración (los tres factores del peso y sus valores) es
@@ -97,13 +104,23 @@ comidas_por_hora     → desempata
 
 ## Resultados
 
-Sobre el escenario publicado (`sample_01`, 775 raciones):
+Sobre el escenario publicado (`sample_01`, 775 raciones). Las cuatro cifras están
+medidas con el mismo simulador y el mismo escenario:
 
-| Motor | % salvado |
-|---|---|
-| Greedy de referencia (el del reto) | 42.1% |
-| Emparejamiento comidas/minuto (referencia de la documentación) | ~53.4% |
-| **Este motor** | **55.4%** |
+| Solucionador | % salvado | Raciones | Comidas/hora |
+|---|---|---|---|
+| Greedy de referencia (el del reto) | 42.1% | 326 | 23.1 |
+| Matcher base comidas/minuto (`solver_match.py`, sin heurísticas) | 53.2% | 412 | 27.8 |
+| Motor determinista (`solver_match_crit.py`) | 55.4% | 429 | 26.9 |
+| **Modelo integrado — scorer + guardrail (`ml/solver_scorer.py`)** | **58.5%** | **453** | 25.2 |
+
+**El modelo integrado es el solucionador de la entrega**: +3.1 pts sobre el motor
+determinista y +5.3 sobre el matcher base en el escenario publicado. Es el que
+hay que ejecutar para reproducir la cifra. Nótese que en el desempate
+(`comidas_por_hora`) el motor determinista puntúa algo mejor: el integrado salva
+más raciones absolutas repartiendo más horas de voluntariado, lo cual es
+favorable porque la métrica principal es el porcentaje salvado y solo se desempata
+por hora cuando hay empate — y aquí no lo hay.
 
 En el conjunto de validación (2000 escenarios fuera de muestra, estratificados
 por dificultad), el motor supera a ambas referencias en los **cuatro cuartiles**,
@@ -215,8 +232,8 @@ El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 > profesor (`labels/planes.jsonl`, 600 escenarios OPTIMAL, 665 KB) **están
 > commiteados** en este repo: son la fuente de verdad del behavioral cloning.
 > El `python3 ml/solver_scorer.py` los usa directamente; solo necesita
-> `lightgbm` (el motor `solver_match_crit.py`, que es la entrega principal,
-> sigue siendo stdlib puro). Si quieres re-entrenar (más semillas, otras
+> `lightgbm` (el motor `solver_match_crit.py`, que es la base determinista del
+> solucionador, sigue siendo stdlib puro). Si quieres re-entrenar (más semillas, otras
 > features, validar reproducibilidad), ejecuta `bash ml/build_scorer.sh`
 > (~4 h en CPU 16 cores, ~2 h en 4 cores; necesita además `ortools`).
 
@@ -224,43 +241,59 @@ El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 
 | Componente | Dependencias | Notas |
 |---|---|---|
-| `solver_match_crit.py` (motor, la entrega) | **solo stdlib** | Sin pip install. Reproduce 55.4% en `sample_01`. |
+| `ml/solver_scorer.py` (**la entrega**: scorer + guardrail) | `lightgbm` | Modelo versionado en `models/scorer_full.txt`. Reproduce 58.5% en `sample_01`. |
+| `solver_match_crit.py` (motor determinista, sola stdlib) | **solo stdlib** | Sin pip install. Reproduce 55.4% en `sample_01`. Base de la que el integrado hereda el guardrail. |
 | `explicar_decision.py` | stdlib + acceso HTTP opcional | LLM opcional vía env (`LLM_ENDPOINT`/`LLM_MODEL`/`LLM_API_KEY`); sin esas vars usa plantilla determinista. |
-| `ml/solver_scorer.py` (scorer en runtime) | `lightgbm` | Lazy import dentro de `cargar_modelo()`; el modelo se carga desde `models/scorer_full.txt` (versionado). |
+| `solver_match.py` (matcher base, referencia) | **solo stdlib** | Sin heurísticas. Reproduce 53.2% en `sample_01`. |
 | `optimo_exacto.py` (techo de referencia) | `ortools` | Solo si quieres re-ejecutar el solver exacto. |
 | `ml/etiquetar_cpsat.py` + `ml/entrenar_variantes.py` (re-generar scorer) | `ortools` + `lightgbm` + `numpy` | Solo si corres `ml/build_scorer.sh`. |
 
-Si clonas y solo quieres ejecutar el motor: `python3 solver_match_crit.py` corre sin instalación. Para el scorer en runtime: `pip install lightgbm` y luego `python3 ml/solver_scorer.py`.
+Para ejecutar la entrega completa: `pip install lightgbm` y luego `python3 ml/solver_scorer.py`. Si además quieres el motor determinista sin instalar nada, `python3 solver_match_crit.py` corre con la biblioteca estándar.
 
 ## Ejecución
 
-Requisitos: Python 3.10+ (solo biblioteca estándar para el motor; el solucionador
-exacto de referencia usa `ortools`).
+Requisitos: Python 3.10+. El solucionador integrado (la entrega) necesita
+`lightgbm`; el motor determinista y las referencias funcionan con la biblioteca
+estándar.
 
 ```bash
-# correr el motor contra el escenario publicado
+# el solucionador de la entrega: scorer + guardrail (necesita lightgbm)
 python3 ai-for-good-72h-harness/comida/simulate.py \
     --scenario ai-for-good-72h-harness/comida/scenarios/sample_01.json \
-    --solver solver_match_crit.py
+    --solver ml/solver_scorer.py
 ```
 
-Devuelve (55.4% en el escenario publicado):
+Devuelve **58.5%** en el escenario publicado:
 
 ```json
 {
   "metrica_principal": "porcentaje_salvado",
   "desempate": "comidas_por_hora",
-  "porcentaje_salvado": 55.4,
-  "comidas_rescatadas": 429,
+  "porcentaje_salvado": 58.5,
+  "comidas_rescatadas": 453,
   "comidas_totales": 775
 }
 ```
 
+Para correr el **motor determinista** (sin instalar nada, solo biblioteca estándar):
+
+```bash
+python3 ai-for-good-72h-harness/comida/simulate.py \
+    --scenario ai-for-good-72h-harness/comida/scenarios/sample_01.json \
+    --solver solver_match_crit.py
+```
+
+Devuelve 55.4% (429 raciones). El guardrail del solucionador integrado se puede
+desactivar con la variable de entorno `GUARDRAIL=0`, que deja solo el scorer
+(58.5% también en este escenario: la salvaguarda actúa sobre todo en la cola de
+casos difíciles, no en la media).
+
 ## Estructura
 
 ```
-solver_match_crit.py            ← el motor (la entrega)
-solver_match.py                 ← matcher base (referencia sin heurísticas)
+ml/solver_scorer.py             ← LA ENTREGA: scorer + guardrail (58.5% en sample_01)
+solver_match_crit.py            ← motor determinista (solo stdlib, 55.4%)
+solver_match.py                 ← matcher base (referencia sin heurísticas, 53.2%)
 docs/METODOLOGIA.md             ← validación completa: metodología y evidencia
 docs/AI_METHODS.md              ← método de IA: scorer por imitación (técnico)
 ai-for-good-72h-harness/        ← simulador del reto (MIT, ajeno)

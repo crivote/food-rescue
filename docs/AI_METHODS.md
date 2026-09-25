@@ -2,11 +2,12 @@
 
 > Documento técnico. Describe el entrenamiento del modelo de puntuación
 > (`scorer`) que sustituye a la fórmula artesanal del peso en el motor. Es el
-> detalle de la sección 7 de `METODOLOGIA.md`. El motor determinista publicado
-> sigue siendo la entrega principal; el scorer es una capa de IA **integrada**
-> como solucionador unificado (`ml/solver_scorer.py`), que combina la decisión
-> del scorer con un **guardrail** (salvaguarda de cola) que devuelve al motor
-> determinista cuando el scorer comete un desperdicio de portador (sección 10).
+> detalle de la sección 7 de `METODOLOGIA.md`. La entrega es el solucionador
+> unificado (`ml/solver_scorer.py`), que combina la decisión del scorer con un
+> **guardrail** (salvaguarda de cola) que devuelve al motor determinista cuando el
+> scorer comete un desperdicio de portador (sección 10). Sobre el escenario
+> publicado salva **58.5%**, frente al 55.4% del motor determinista que sirve de
+> base y de salvaguarda.
 >
 > Los scripts de esta capa viven en la subcarpeta `ml/` (raíz del repo); los
 > módulos del motor que reutilizan (`solver_match_crit`, `firma_global`,
@@ -31,7 +32,10 @@ Ese peso es **miope**: valora cada viaje candidato por su mérito inmediato y no
 por su **coste de oportunidad futuro** (qué recogida sacrifica al consumir ahora
 un voluntario capaz). El solucionador exacto (CP-SAT, `optimo_exacto.py`) sí ve
 el plan completo y recupera **+6.4 pts** más que el motor en el escenario
-publicado (55.4% → 61.8%).
+publicado (55.4% → 61.8%). El objetivo de esta vía es acercarse a ese techo sin
+pagar el coste de un solver exacto en línea: el solucionador integrado que aquí
+se describe salva **58.5%** en ese mismo escenario (58.5% frente a 61.8%, es decir
++3.1 pts sobre el motor y a 3.3 pts del óptimo).
 
 La idea del *behavioral cloning*: en lugar de diseñar a mano una función de peso
 que anticipe el futuro, **destilar la política del solucionador exacto a un
@@ -395,3 +399,23 @@ configurar o desactivar por variables de entorno:
 El determinismo se conserva: el guardrail es una función pura del estado (no
 añade aleatoriedad), y el fallback sin modelo sigue siendo el motor
 determinista.
+
+### 10.5 El escenario publicado: cifra exacta de la entrega
+
+Las tablas de §10.3 son agregadas sobre 800 semillas. Como el evaluador del reto
+puntúa sobre semillas concretas, se reporta también la medición sobre el
+escenario publicado `sample_01` (775 raciones):
+
+| Solucionador | % salvado | Raciones rescatadas |
+|---|---|---|
+| Matcher base (`solver_match.py`) | 53.2% | 412 |
+| Motor determinista (`solver_match_crit.py`) | 55.4% | 429 |
+| Scorer puro (`GUARDRAIL=0`) | 58.5% | 453 |
+| **Integrado: scorer + guardrail (la entrega)** | **58.5%** | **453** |
+
+En este escenario el guardrail **no se dispara** (misma cifra con y sin él),
+que es el comportamiento esperado: la salvaguarda actúa sobre la cola de casos
+difíciles, no sobre la media ni sobre un escenario donde el scorer ya decide bien.
+La cifra de la entrega sobre el escenario publicado es, por tanto, **58.5%**
+(+3.1 pts sobre el motor determinista), reproducible en dos ejecuciones
+consecutivas con idéntico resultado.

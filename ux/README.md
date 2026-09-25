@@ -79,7 +79,7 @@ lógicas: `data/turno.json` sale de ejecutar el motor real, y la interfaz solo p
 resultado.
 
 ```
-solver_match_crit.py  (el motor, la entrega)
+solver_match_crit.py  (el motor determinista, base de la entrega)
         │
         │  simulate.py --solver solver_match_crit.py --registro traza.json
         ▼
@@ -88,6 +88,13 @@ solver_match_crit.py  (el motor, la entrega)
                                  turno de un           fuente de datos)
                                  voluntario)
 ```
+
+> Nota: la entrega del reto es el solucionador unificado `ml/solver_scorer.py`
+> (scorer + guardrail, 58.5% en el escenario publicado). El prototipo de `ux/`
+> se genera con el **motor determinista** (`solver_match_crit.py`, 55.4%) porque
+> corre con la biblioteca estándar, sin dependencias. La traza de la app es real
+> en ambos casos; se eligió el motor por simplicidad de reproducción del
+> prototipo, no porque sea el solucionador de la entrega.
 
 **Qué es exactamente lo que se copia de la traza.** `build_turno.py` recorre el registro
 del simulador, se queda con las misiones del voluntario objetivo y deriva:
