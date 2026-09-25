@@ -20,7 +20,8 @@ const COMERCIOS = {
          foto: "panaderia-espiga" },
   r27: { nombre: "Frutería El Vergel",       direccion: "Avenida de los Olivos 45",
          foto: "fruteria-vergel" },
-  r24: { nombre: "Restaurante La Mesa",      direccion: "Calle de la Fuente 3" },
+  r24: { nombre: "Restaurante La Mesa",      direccion: "Calle de la Fuente 3",
+         foto: "restaurante-mesa" },
   r25: { nombre: "Mercado de la Ribera",     direccion: "Paseo del Río 30" },
   r09: { nombre: "Panificadora Central",     direccion: "Calle Norte 17" },
 };

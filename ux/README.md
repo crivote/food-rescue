@@ -5,7 +5,7 @@ un turno de recogida y entrega de comida. Se publica como web estática:
 
 **https://crivote.github.io/food-rescue/ux/**
 
-- `?modo=lamina` — las cuatro pantallas en fila (vista de diseño)
+- `?modo=lamina` — las seis pantallas en fila (vista de diseño)
 - sin parámetro — la app navegable, con el recorrido completo
 
 ---
@@ -52,11 +52,14 @@ Es la pregunta importante, así que va primero y sin rodeos.
 
 ### Qué punto tiene foto y cuál no
 
-Hay foto de **3 de los 4 puntos de recogida** (supermercado, panadería, frutería) y de
-ninguno de los dos destinos: los locales donde se recoge son sitios a los que el
-voluntario llega y tiene que reconocer, mientras que los destinos ya se identifican por
-su nombre. **El cuarto punto, el restaurante, no tiene foto todavía**: en su lugar no se
-pinta nada — un hueco ausente es mejor que una imagen rota o una de relleno.
+Hay foto de **los 4 puntos de recogida** (supermercado, panadería, frutería,
+restaurante) y **de ninguno de los dos destinos**. Los comercios son sitios a los que el
+voluntario llega y tiene que reconocer de un vistazo; los destinos ya se identifican por
+su nombre y su dirección.
+
+Cuando un punto no tiene foto **no se pinta nada**: un hueco ausente es mejor que una
+imagen rota o una de relleno. Añadir la foto del comedor y del banco de alimentos es
+solo dejar el fichero en `assets/` y nombrarlo en el diccionario.
 
 ### Por qué esta separación
 
@@ -98,7 +101,7 @@ ux/
   js/
     app.js             arranque y flujo del turno
     estado.js          estado en memoria; puntos y nivel DERIVADOS
-    pantallas.js       las 4 pantallas — ÚNICA FUENTE del marcado
+    pantallas.js       las 6 pantallas — ÚNICA FUENTE del marcado
     nombres.js         id -> nombre legible (la frontera del punto 1)
     mapa.js            el plano y sus marcadores
     panel.js           panel inferior deslizable

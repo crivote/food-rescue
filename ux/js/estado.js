@@ -11,9 +11,10 @@ import { puntosPor, nivelDe, subeDeNivel, progresoNivel } from "./gamificacion.j
 /** Fases de una mision, en orden. */
 export const FASE = {
   ASIGNADA: "asignada",
-  CAMINO: "camino",
-  RECOGIDA: "recogida",
-  ENTREGA: "entrega",
+  CAMINO: "camino",        // de camino al comercio
+  RECOGIDA: "recogida",    // confirmar lo que se carga
+  ENTREGA: "entrega",      // de camino al centro de entrega
+  CIERRE: "cierre",        // confirmar lo que se queda alli
   EXITO: "exito",
 };
 
@@ -25,7 +26,8 @@ export function nuevoEstado(turno) {
     fase: FASE.ASIGNADA,
     racionesTurno: 0,                // entregadas en lo que va de turno
     puntosBase: turno.puntos_base,
-    cargadas: null,                  // raciones confirmadas en esta mision
+    cargadas: null,                  // raciones confirmadas al recoger
+    aceptadas: null,                 // raciones que se quedan en el centro
     mision: turno.misiones[0],
   };
 }
@@ -55,7 +57,7 @@ export function haSubidoDeNivel(est) {
 }
 
 function entregadasMisionActual(est) {
-  return est.cargadas ?? 0;
+  return est.aceptadas ?? est.cargadas ?? 0;
 }
 
 export function haySiguienteMision(est) {
@@ -69,15 +71,19 @@ export function siguienteMision(est) {
   est.mision = est.turno.misiones[est.indice];
   est.fase = FASE.ASIGNADA;
   est.cargadas = null;
+  est.aceptadas = null;
   return true;
 }
 
 /**
  * Confirma la entrega de la mision en curso: suma las raciones y
  * pasa a la pantalla de exito.
+ *
+ * Cuenta lo ACEPTADO, no lo cargado: por el camino algo puede
+ * estropearse o el centro puede rechazar lo que no esta en condiciones.
  */
 export function confirmarEntrega(est) {
-  const n = est.cargadas ?? est.mision.raciones;
+  const n = est.aceptadas ?? est.cargadas ?? est.mision.raciones;
   est.racionesTurno = est.racionesTurno + n;
   est.fase = FASE.EXITO;
   return n;

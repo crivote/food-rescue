@@ -167,7 +167,76 @@ export function pantallaRecogida(est) {
     ${acts({ icono: "i-truck", texto: "Confirmo la carga y la entrego" }, "Cancelo la recogida")}`;
 }
 
-/* ---------- 4 · ÉXITO ---------- */
+/* ---------- 4 · DE CAMINO AL CENTRO ---------- */
+
+export function pantallaEntrega(est) {
+  const m = est.mision;
+  const llevas = est.cargadas ?? m.raciones;
+  return `
+    ${stepper(3)}
+    <div class="card">
+      <span class="eyebrow">En camino</span>
+      <h2>Al punto de entrega</h2>
+      <p class="sub" style="display:flex;align-items:center;gap:5px">
+        <svg style="width:18px;height:18px;stroke:var(--solid);fill:none;stroke-width:1.8"><use href="#i-pin"/></svg>
+        ${nombreDe(m.centro)}<br>${direccionDe(m.centro)}
+      </p>
+      ${planoHTML(m, { desde: m.recogida })}
+      ${trayectoHTML(m, { km: m.km_vuelta, min: m.min_vuelta })}
+      <div class="pills">
+        <span class="pill">${ico("i-box")}llevas ${llevas} raciones</span>
+      </div>
+    </div>
+    ${acts({ icono: "i-pin", texto: "Confirmar entrega" }, "Cancelo la entrega")}`;
+}
+
+/* ---------- 5 · CIERRE EN EL CENTRO ---------- */
+
+export function pantallaCierre(est) {
+  const m = est.mision;
+  const cargadas = est.cargadas ?? m.raciones;
+  const aceptadas = est.aceptadas ?? cargadas;
+  return `
+    ${stepper(4)}
+    <div class="card">
+      <span class="eyebrow">Has llegado</span>
+      <h2>Confirma la entrega</h2>
+      <p class="sub" style="display:flex;align-items:center;gap:5px">
+        <svg style="width:18px;height:18px;stroke:var(--solid);fill:none;stroke-width:1.8"><use href="#i-pin"/></svg>
+        ${nombreDe(m.centro)}<br>${direccionDe(m.centro)}
+      </p>
+      ${fotoLocal(m.centro)}
+      <p>Revisad juntos lo que traes. Si por el camino algo se ha estropeado o no está en condiciones, no se cuenta.</p>
+      <div class="card load">
+        <span class="eyebrow">Entrega confirmada</span>
+        <div class="stepper" data-value="${aceptadas}">
+          <button class="st-minus" aria-label="Quitar ración">${ico("i-minus")}</button>
+          <span class="val">${aceptadas}</span>
+          <button class="st-plus" aria-label="Añadir ración">${ico("i-plus")}</button>
+        </div>
+        <div class="cap">raciones que se quedan aquí</div>
+        <div class="hint">ajusta el número si el centro rechaza alguna</div>
+      </div>
+    </div>
+    ${acts({ icono: "i-check", texto: "Confirmo la entrega" }, "Cancelo la entrega")}`;
+}
+
+/* ---------- 6 · ÉXITO ---------- */
+
+/**
+ * Cuando no todo lo cargado llega al centro, el numero grande no
+ * cuadraria con lo que el voluntario recuerda haber cargado. Esta
+ * linea lo explica sin dramatizar y sin culpar a nadie.
+ */
+function mermaHTML(est, entregadas) {
+  const cargadas = est.cargadas ?? est.mision.raciones;
+  const perdidas = Math.max(0, cargadas - entregadas);
+  if (perdidas === 0) return "";
+  const frase = perdidas === 1
+    ? "Una ración no ha llegado en condiciones"
+    : `${perdidas} raciones no han llegado en condiciones`;
+  return `<p class="sub" style="margin-top:7px">${frase}. El resto sí se aprovecha.</p>`;
+}
 
 export function pantallaExito(est, { racionesEntregadas, subeNivel }) {
   const m = est.mision;
@@ -207,6 +276,7 @@ export function pantallaExito(est, { racionesEntregadas, subeNivel }) {
         salvadas antes de caducar · ${hhmm(m.caduca_min)}
       </p>
       <span class="pill amber" style="margin-top:9px;display:inline-flex">${ico("i-star")}+${puntosPor(racionesEntregadas)} pts</span>
+      ${mermaHTML(est, racionesEntregadas)}
       ${logros.join("")}
     </div>
     ${acts({ icono: "i-arrow", texto: siguiente }, null)}`;
@@ -217,6 +287,8 @@ export function pantallaActual(est, extra = {}) {
   switch (est.fase) {
     case FASE.CAMINO:   return pantallaCamino(est, extra.desde);
     case FASE.RECOGIDA: return pantallaRecogida(est);
+    case FASE.ENTREGA:  return pantallaEntrega(est);
+    case FASE.CIERRE:   return pantallaCierre(est);
     case FASE.EXITO:    return pantallaExito(est, extra);
     default:            return pantallaMision(est);
   }

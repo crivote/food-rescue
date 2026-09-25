@@ -4,13 +4,13 @@
    Carga los datos, monta la pantalla y lleva las pulsaciones.
    Dos modos de vista:
      - app    (por defecto): una pantalla navegable, el recorrido real
-     - lamina  (?modo=lamina): las 4 pantallas en fila, para diseno
+     - lamina  (?modo=lamina): las 6 pantallas en fila, para diseno
    Ambas componen el MISMO marcado (pantallas.js).
    ============================================================ */
 
 import { cargarTurno } from "./data.js";
 import { nuevoEstado, FASE, siguienteMision, confirmarEntrega,
-         haySiguienteMision } from "./estado.js";
+         haySiguienteMision, puntos } from "./estado.js";
 import { pantallaActual } from "./pantallas.js";
 import { barraEstado, cabecera } from "./cabecera.js";
 import { panelHTML, initPanel, initMenu } from "./panel.js";
@@ -65,9 +65,12 @@ async function modoApp() {
     if (b.classList.contains("st-plus") || b.classList.contains("st-minus")) {
       const st = b.closest(".stepper");
       const delta = b.classList.contains("st-plus") ? 1 : -1;
-      const max = est.mision.raciones;
-      const v = Math.max(0, Math.min(max, (est.cargadas ?? max) + delta));
-      est.cargadas = v;
+      /* Al cerrar la entrega no se puede aceptar mas de lo que se cargo. */
+      const enCierre = est.fase === FASE.CIERRE;
+      const base = enCierre ? (est.aceptadas ?? est.cargadas) : est.cargadas;
+      const max = enCierre ? (est.cargadas ?? est.mision.raciones) : est.mision.raciones;
+      const v = Math.max(0, Math.min(max, (base ?? max) + delta));
+      if (enCierre) est.aceptadas = v; else est.cargadas = v;
       st.dataset.value = v;
       st.querySelector(".val").textContent = v;
       return;
@@ -82,9 +85,18 @@ async function modoApp() {
       est.fase = FASE.RECOGIDA;
       pintar();
     } else if (/^Confirmo la carga/.test(txt)) {
-      const antes = est.puntosBase + (est.racionesTurno * 10);
+      /* Cargado no es entregado: queda el viaje de vuelta y el cierre
+         en el centro, donde puede rechazarse algo. Todavia sin puntos. */
+      est.cargadas = est.cargadas ?? est.mision.raciones;
+      est.fase = FASE.ENTREGA;
+      pintar();
+    } else if (/^Confirmar entrega/.test(txt)) {
+      est.fase = FASE.CIERRE;
+      pintar();
+    } else if (/^Confirmo la entrega/.test(txt)) {
+      const antes = puntos(est);
       const n = confirmarEntrega(est);
-      const despues = est.puntosBase + (est.racionesTurno * 10);
+      const despues = puntos(est);
       pintar({ racionesEntregadas: n, subeNivel: Math.floor(despues / 900) > Math.floor(antes / 900) });
     } else if (/^Siguiente misi/.test(txt) || /^Terminar mi turno/.test(txt)) {
       if (haySiguienteMision(est)) {
@@ -112,6 +124,8 @@ async function modoLamina() {
     { fase: FASE.ASIGNADA, extra: {} },
     { fase: FASE.CAMINO,   extra: { desde: null } },
     { fase: FASE.RECOGIDA, extra: {} },
+    { fase: FASE.ENTREGA,  extra: {} },
+    { fase: FASE.CIERRE,   extra: {} },
     { fase: FASE.EXITO,    extra: { racionesEntregadas: base.mision.raciones, subeNivel: false } },
   ];
 

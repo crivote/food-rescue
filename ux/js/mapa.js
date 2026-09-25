@@ -64,11 +64,14 @@ function hhmmCaduca(m) {
   return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
 }
 
-/** Barra de progreso del trayecto (recorrido/ETA). */
-export function trayectoHTML(m) {
+/**
+ * Barra de progreso del trayecto (recorrido/ETA).
+ * Por defecto el tramo de ida; el de vuelta al centro pasa sus cifras.
+ */
+export function trayectoHTML(m, { km = m.km_ida, min = m.min_ida } = {}) {
   return `
     <div class="trip">
       <div class="bar"><i style="width:40%"></i><span class="knob" style="left:40%"></span></div>
-      <div class="lab"><span>recorrido ${m.km_ida} km</span><span><b>unos ${m.min_ida} min</b></span></div>
+      <div class="lab"><span>recorrido ${km} km</span><span><b>unos ${min} min</b></span></div>
     </div>`;
 }
