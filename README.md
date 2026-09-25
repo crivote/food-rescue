@@ -248,7 +248,7 @@ El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 > (`models/scorer_full.txt`, 2.7 MB) y los planes CP-SAT que sirvieron como
 > profesor (`labels/planes.jsonl`, 600 escenarios OPTIMAL, 665 KB) **están
 > commiteados** en este repo: son la fuente de verdad del behavioral cloning.
-> El `python3 ml/solver_scorer.py` los usa directamente; solo necesita
+> El `solve.py` (que reexporta `ml/solver_scorer.py`) los usa directamente; solo necesita
 > `lightgbm` (el motor `solver_match_crit.py`, que es la base determinista del
 > solucionador, sigue siendo stdlib puro). Si quieres re-entrenar (más semillas, otras
 > features, validar reproducibilidad), ejecuta `bash ml/build_scorer.sh`
