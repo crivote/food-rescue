@@ -15,6 +15,27 @@ portador, documentada en [`docs/AI_METHODS.md`](docs/AI_METHODS.md).
 
 ---
 
+## Demo
+
+| | |
+|---|---|
+| **Vídeo explicativo** | <https://drive.google.com/file/d/1qI1DM7ggbGid23AKZ3uRm408IocD0nqG/view?usp=sharing> |
+| **App del voluntariado** | <https://crivote.github.io/food-rescue/ux/> |
+
+**La app se sirve como web estática y necesita un servidor HTTP.** No está pensada para
+verse abriendo el fichero con doble clic: los datos se piden con `fetch()` y el código son
+módulos ES, así que el navegador los bloquea desde `file://`. Es el comportamiento
+esperado, no un fallo. Para servirla en local, desde la carpeta `ux/`:
+
+```bash
+python3 -m http.server 8000    # abre http://localhost:8000/
+```
+
+El detalle de la interfaz —qué es real, qué es ficticio y cómo se integra con el
+motor— está en [`ux/README.md`](ux/README.md).
+
+---
+
 ## TL;DR — qué es real, qué es simulado y qué fuentes usamos
 
 **Qué funciona de verdad.** El motor (`solver_match_crit.py`) es código real,
@@ -264,7 +285,14 @@ labels/                         ← planes CP-SAT versionados (600 escenarios, f
 models/                         ← modelos LightGBM versionados
     scorer_full.txt             ← 2.7 MB, LambdaRank (binario, 25 features)
 explicar_decision.py            ← traduce una decisión a lenguaje natural (LLM)
-ux/index.html                   ← prototipo de app de voluntario (sin build)
+ux/                             ← prototipo de app del voluntario (web estática, sin build)
+    README.md                   ← qué es real, qué es ficticio y cómo se integra con el motor
+    index.html                  ← solo estructura + sprite de iconos
+    js/                         ← flujo, estado, pantallas y el diccionario de nombres
+    css/                        ← tokens, layout y componentes
+    data/turno.json             ← la traza REAL del motor (generada, no escrita a mano)
+    build_turno.py              ← regenera data/turno.json desde el motor
+    assets/                     ← logo, plano y fotos de los locales
 ```
 
 ## Visión de producto — del simulador al sistema real
@@ -290,16 +318,30 @@ El motor de este repositorio es directamente reutilizable como el núcleo de
 decisión de ese sistema: la interfaz `decidir(estado)` no cambia; solo cambia
 quién produce el `estado` (el simulador, o la API en tiempo real del sistema).
 
-Como muestra del salto a producto, `ux/index.html` es un prototipo estático de
-la app del voluntario (HTML + CSS + JS vanilla, sin build) que reproduce el
-flujo *misión → aceptar → recoger → entregar → recompensa*, con gamificación de
-puntos y la explicación de por qué se asignó cada recogida. Esa explicación no
-está hardcodeada: `explicar_decision.py` la genera traduciendo el contexto de
-decisión del motor a lenguaje natural con un LLM barato (mecanismo descrito en
-[`docs/AI_METHODS.md`](docs/AI_METHODS.md), §9).
+Como muestra del salto a producto, `ux/` es un prototipo de la app del voluntario
+(HTML + CSS + JS vanilla, sin build) **publicado como web estática** y navegable en
+<https://crivote.github.io/food-rescue/ux/>. Reproduce el flujo completo del turno
+—*misión → aceptar → ir a recoger → cargar → ir a entregar → confirmar entrega →
+recompensa*— con gamificación de puntos y seis pantallas.
+
+Los datos **no están escritos a mano**: `ux/data/turno.json` es una traza real del motor
+sobre el escenario publicado, y `ux/build_turno.py` la regenera ejecutando el simulador.
+Lo que es ficticio es solo la capa de presentación (nombres de comercios y centros,
+plano y fotos), porque el escenario es simulado y sus puntos son identificadores
+internos. `ux/README.md` separa explícitamente lo real de lo ficticio.
+
+Sobre la explicación de por qué se asignó cada recogida: `explicar_decision.py` traduce
+el contexto de decisión del motor a lenguaje natural con un LLM barato (mecanismo
+descrito en [`docs/AI_METHODS.md`](docs/AI_METHODS.md), §9). En la app publicada esa
+frase se resuelve con una plantilla del propio motor, sin llamada a ningún servicio: la
+interfaz es un prototipo de interacción y no está conectada a nada externo.
 
 ## Licencia
 
 El motor y los scripts de validación de este repositorio están bajo la licencia
-**MIT** (ver `LICENSE`). El simulador (`ai-for-good-72h-harness/`) es ajeno y se
-distribuye bajo su propia licencia MIT (ver `ai-for-good-72h-harness/LICENSE`).
+**MIT** (ver `LICENSE`), incluida la app del voluntariado de `ux/`. El simulador
+(`ai-for-good-72h-harness/`) es ajeno y se distribuye bajo su propia licencia MIT
+(ver `ai-for-good-72h-harness/LICENSE`).
+
+Las imágenes de `ux/assets/` son **ilustraciones generadas** para el prototipo (no
+fotografías de locales reales, que no existen porque el escenario es simulado).

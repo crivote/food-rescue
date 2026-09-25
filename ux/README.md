@@ -72,6 +72,86 @@ duda.
 
 ---
 
+## Cómo se integra con el solver
+
+La app es la **capa de producto** del mismo motor que resuelve el reto. No hay dos
+lógicas: `data/turno.json` sale de ejecutar el motor real, y la interfaz solo presenta su
+resultado.
+
+```
+solver_match_crit.py  (el motor, la entrega)
+        │
+        │  simulate.py --solver solver_match_crit.py --registro traza.json
+        ▼
+   traza del simulador  ──►  build_turno.py  ──►  data/turno.json  ──►  la interfaz
+        (registro real)         (extrae el           (la única
+                                 turno de un           fuente de datos)
+                                 voluntario)
+```
+
+**Qué es exactamente lo que se copia de la traza.** `build_turno.py` recorre el registro
+del simulador, se queda con las misiones del voluntario objetivo y deriva:
+
+- las 4 recogidas, su orden, las raciones de cada una y su hora de caducidad → tal cual
+  de la traza;
+- los km y minutos de cada tramo → recalculados con la **misma fórmula haversine y la
+  misma velocidad** que usa el simulador (`velocidad_kmh` del voluntario), no estimados;
+- la capacidad y la ventana del turno → del escenario.
+
+Los dos únicos valores que **no** salen del motor son el alias y la foto de la
+voluntaria, que son presentación. Están marcados como tal en el propio script.
+
+### La frontera: `js/nombres.js`
+
+El motor razona con identificadores (`r32`, `c5`) y un centro `c` es siempre **destino**
+(el que tiene capacidad de almacenaje), nunca un comercio. Esos identificadores son
+andamiaje interno y no pueden aparecer en pantalla. `js/nombres.js` es la frontera única:
+todo lo que se muestra pasa por `nombreDe()`, y si un punto no está en el diccionario
+devuelve una descripción genérica legible, **jamás el identificador crudo**.
+
+Las fotos se nombran por el **local inventado** (`supermercado-huerto.webp`), nunca por
+el identificador del escenario, para que el repositorio público no revele la
+nomenclatura interna. La correspondencia real está solo en `nombres.js`.
+
+### Qué NO hace la interfaz
+
+- **No decide nada.** No hay asignación, ni optimización, ni reasignación en la app. El
+  turno que se ve es el que decidió el motor, y la interfaz no puede cambiarlo.
+- **No llama al motor en vivo.** Es un prototipo de interacción sobre una traza
+  precalculada, no un cliente del `decidir(estado)` en ejecución.
+- **No está conectada a ningún servicio externo.** No hay red, ni backend, ni API. La
+  página es HTML, CSS y JS servidos como ficheros estáticos.
+
+El salto a producto es sustituir la traza por la respuesta en vivo de `decidir(estado)`:
+la forma de los datos no cambia, solo quién los produce.
+
+---
+
+## Decisiones de diseño
+
+Estas son las que costaron una vuelta, y por qué quedaron así:
+
+- **Seis pantallas, no cuatro.** El stepper anuncia cuatro pasos y ahora los cuatro se
+  alcanzan. Se añadieron las dos que faltaban (el viaje al centro y el cierre en la
+  entrega) porque el recorrido de vuelta existe en los datos y no se estaba contando.
+- **Cargado ≠ entregado.** La caja sale del comercio con N raciones, pero por el camino
+  algo puede estropearse o el centro puede rechazar producto deteriorado. Los puntos se
+  suman al **cerrar la entrega**, contando lo que el centro **acepta**, con tope en lo
+  cargado. Si hay diferencia, la pantalla de recompensa lo explica sin dramatizar.
+- **La foto va en la pantalla de llegada**, no en la de camino (que ya lleva el plano).
+  Ahí es donde sirve: para confirmar que se está en el sitio correcto. El pie cambia
+  según el momento (*"Así reconocerás el local"* / *"…el punto de entrega"*).
+- **El plano es ilustrativo, los números no.** El fondo es una ilustración generada y las
+  chinchetas están colocadas de forma verosímil, no proyectadas desde las coordenadas
+  reales. Un plano realista de Madrid situaría comercios inventados en calles reales.
+- **Puntos y nivel se derivan, no se acumulan.** `estado.js` los calcula de las raciones
+  entregadas, así que no pueden desincronizarse del contador.
+- **Los niveles son neutros en género** (*Primeros pasos*, *Colaboración*,
+  *Voluntariado*, *Rescate*, *Líder de turno*) porque la interfaz no debe presuponer
+  quién la usa.
+
+---
+
 ## Principio de diseño
 
 **Quien usa esto no es quien lo evalúa.** La persona voluntaria no sabe —ni tiene por
@@ -84,8 +164,20 @@ De ahí tres reglas que el código respeta y que se pueden comprobar:
 1. **Ningún identificador interno llega a la pantalla.** `js/nombres.js` es la frontera:
    todo lo que se muestra pasa por ahí, y si un punto no está en el diccionario
    devuelve una descripción genérica legible, **nunca el identificador crudo**.
+
+   ```bash
+   # los unicos ids viven en la tabla de nombres, que es donde deben estar
+   grep -rE "\b[rc][0-9]{1,3}\b" index.html js/ css/     # -> solo js/nombres.js
+   ```
+
 2. **Ninguna palabra de ingeniería.** Ni "motor", ni "algoritmo", ni "optimización".
-   Comprobable: `grep -iE "motor|algoritmo|haversine" ux/index.html`
+   El texto que ve el usuario está en `js/`, no en el HTML:
+
+   ```bash
+   grep -riE "motor|algoritmo|haversine|optimizaci" index.html js/ css/ data/
+   # -> sin resultados
+   ```
+
 3. **El lenguaje de la recompensa es emocional.** Puntos, nivel y objetivo del turno.
 
 ---
@@ -110,15 +202,13 @@ ux/
     data.js            carga y valida los datos
     tiempo.js          minutos del escenario -> horas de reloj
     gamificacion.js    puntos, niveles, objetivos
+  build_turno.py       regenera data/turno.json desde el motor
   data/turno.json      la traza real (generada, no escrita a mano)
   assets/              logo, plano y fotos de los locales
-
-Las fotos se sirven a 640 px de ancho en webp (27-65 KB cada una) y se recortan a 132 px
-de alto desde el CSS. Solo las tienen los locales cuya foto existe: el resto
-muestra la tarjeta sin imagen, porque un hueco ausente es mejor que una
-imagen rota.
-  build_turno.py       regenera data/turno.json desde el motor
 ```
+
+Las fotos se sirven a 640 px de ancho en webp (27-65 KB cada una) y el CSS las recorta a
+132 px de alto.
 
 **`pantallas.js` es la única fuente del marcado.** Tanto la app navegable como la vista
 de lámina componen las mismas funciones; sólo cambia el contenedor. Duplicar el marcado
@@ -155,3 +245,7 @@ mano.
 
 Es un **prototipo de interacción** para la demostración del MVP. Lo que demuestra es el
 aspecto y el flujo; no es la aplicación final ni está conectada a ningún servicio real.
+
+Los **datos del turno son reales** (salen del motor), pero el turno que se ve es **una
+traza precalculada**, no una ejecución en vivo del motor. Y el flujo se recorre con
+botones: no hay backend, ni cuentas, ni estado que sobreviva a recargar la página.
