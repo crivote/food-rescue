@@ -1,575 +1,1545 @@
 <!doctype html>
 <html lang="es">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rescate · voluntario</title>
-<style>
-  :root {
-    --bg: #f4f2ee;
-    --surface: #ffffff;
-    --surface-2: #faf9f6;
-    --fg: #1a1a1a;
-    --muted: #6b6761;
-    --faint: #9a958b;
-    --line: #e5e1d9;
-    --accent: #2e7d4f;
-    --accent-ink: #235e3b;
-    --accent-soft: #e8f2eb;
-    --gold: #b7791f;
-    --gold-soft: #f6eedd;
-    --danger: #a33b3b;
-    --danger-soft: #f7ecec;
-    --radius: 14px;
-    --radius-s: 9px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                 "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    background: #e9e5dd;
-    color: var(--fg);
-    line-height: 1.45;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .phone {
-    width: 100%;
-    max-width: 430px;
-    height: min(820px, 94vh);
-    background: var(--bg);
-    border-radius: 28px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 2px 10px rgba(0,0,0,.08);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-  }
-  .appbar {
-    padding: 16px 20px 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand .dot {
-    width: 30px; height: 30px; border-radius: 9px;
-    background: var(--accent); color: #fff;
-    display: grid; place-items: center;
-    font-weight: 700; font-size: 15px;
-  }
-  .brand .name { font-weight: 650; font-size: 16px; }
-  .brand .sub { font-size: 12px; color: var(--muted); }
-  .points-pill {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 13px; font-weight: 700; color: var(--gold);
-    background: var(--gold-soft); border: 1px solid #e8d7b0;
-    padding: 6px 11px; border-radius: 999px;
-  }
-  .points-pill svg { display: block; }
-
-  /* tira de turno (información persistente) */
-  .shift-strip {
-    margin: 0 20px 12px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .shift-strip .clock { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
-  .level-track { flex: 1; }
-  .level-track .lvl-line {
-    display: flex; justify-content: space-between;
-    font-size: 11px; color: var(--muted); margin-bottom: 4px;
-  }
-  .level-track .lvl-line b { color: var(--accent-ink); }
-  .lvl-bar { height: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-  .lvl-bar .fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s ease; }
-
-  .screen {
-    flex: 1; overflow-y: auto;
-    padding: 4px 20px 20px;
-    display: flex; flex-direction: column;
-    gap: 14px;
-  }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .kicker { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
-  .title { font-size: 22px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
-  .subtitle { font-size: 14px; color: var(--muted); }
-
-  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .chip {
-    font-size: 12px; color: var(--muted); background: var(--surface-2);
-    border: 1px solid var(--line); border-radius: var(--radius-s);
-    padding: 5px 10px; display: flex; align-items: center; gap: 6px;
-  }
-  .chip b { color: var(--fg); font-weight: 650; }
-  .reward-chip {
-    color: var(--gold); background: var(--gold-soft);
-    border-color: #e8d7b0; font-weight: 700;
-  }
-  .rationale {
-    margin-top: 12px; background: var(--accent-soft);
-    border: 1px solid #cfe3d5; border-radius: var(--radius-s);
-    padding: 11px 13px; font-size: 13px; color: var(--accent-ink);
-  }
-  .rationale .lbl { display: flex; align-items: center; gap: 6px; font-weight: 650; font-size: 12px; margin-bottom: 3px; }
-  .rationale svg { flex: 0 0 auto; }
-
-  .actions { display: flex; gap: 10px; margin-top: 4px; }
-  .btn {
-    flex: 1; border: none; border-radius: var(--radius-s);
-    padding: 14px; font-size: 15px; font-weight: 650; cursor: pointer;
-    transition: transform .05s ease, background .15s ease;
-  }
-  .btn:active { transform: translateY(1px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-ink); }
-  .btn-ghost { background: var(--surface); color: var(--danger); border: 1px solid var(--line); }
-  .btn-ghost:hover { background: var(--danger-soft); }
-
-  .mapwrap { position: relative; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #eef0eb; }
-  .mapwrap svg { display: block; width: 100%; height: auto; }
-  .maplabel { font-size: 10px; fill: var(--muted); font-weight: 600; }
-  .eta {
-    position: absolute; top: 10px; left: 10px;
-    background: rgba(255,255,255,.92); border: 1px solid var(--line);
-    border-radius: 10px; padding: 8px 12px; font-size: 13px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-  }
-  .eta b { font-weight: 700; }
-  .progress { height: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-  .progress .bar { height: 100%; background: var(--accent); width: 0%; transition: width .2s linear; border-radius: 999px; }
-
-  .big { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
-  .unit { font-size: 15px; color: var(--muted); font-weight: 500; }
-
-  /* impacto / recompensa */
-  .impact { text-align: center; padding: 22px 16px; }
-  .impact .ring { width: 84px; height: 84px; border-radius: 50%; background: var(--accent-soft); border: 2px solid #cfe3d5; display: grid; place-items: center; margin: 0 auto 12px; }
-  .impact .ring svg { display: block; }
-  .stat { font-size: 34px; font-weight: 700; color: var(--accent-ink); }
-  .points-earned { font-size: 15px; font-weight: 700; color: var(--gold); }
-  .count-up { font-variant-numeric: tabular-nums; }
-
-  .badge-banner {
-    margin-top: 12px; background: var(--gold-soft); border: 1px solid #e8d7b0;
-    border-radius: var(--radius-s); padding: 11px 13px;
-    display: flex; align-items: center; gap: 10px; text-align: left;
-  }
-  .badge-banner .medal {
-    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
-    background: var(--gold); color: #fff; display: grid; place-items: center;
-    font-size: 16px; font-weight: 700;
-  }
-  .badge-banner .bd-title { font-weight: 700; font-size: 13px; color: var(--gold); }
-  .badge-banner .bd-sub { font-size: 12px; color: var(--muted); }
-
-  .goal-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-  .goal-row .g-num { font-weight: 700; color: var(--accent-ink); }
-
-  .footer-note { font-size: 11px; color: var(--faint); text-align: center; padding: 0 8px 14px; }
-  .hidden { display: none !important; }
-</style>
-</head>
-<body>
-  <div class="phone">
-    <div class="appbar">
-      <div class="brand">
-        <div class="dot">R</div>
-        <div>
-          <div class="name">Rescate</div>
-          <div class="sub">excedente alimentario</div>
-        </div>
-      </div>
-      <div class="points-pill" id="pointsPill">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 9l-5.2 4 1.6 6.6L12 16l-5.4 3.6L8.2 13 3 9l6.6-.4L12 2z"/></svg>
-        <span id="pointsNum">0</span>&nbsp;pts
-      </div>
-    </div>
-
-    <div class="shift-strip">
-      <div class="clock" id="clock">19:00</div>
-      <div class="level-track">
-        <div class="lvl-line">
-          <span id="levelLabel">Nivel 3 · Voluntario</span>
-          <b id="turnoLabel">turno 19:30–21:30</b>
-        </div>
-        <div class="lvl-bar"><div class="fill" id="lvlFill"></div></div>
-      </div>
-    </div>
-
-    <div id="app" class="screen"></div>
-
-    <div class="footer-note">Prototipo de interacción · datos de un turno simulado (Madrid)</div>
-  </div>
-
-<script>
-/* ============ Datos reales del escenario sample_01 (harness) ============ */
-const BBOX = { latMin: 40.33, latMax: 40.51, lonMin: -3.82, lonMax: -3.58 };
-
-const RECOGIDAS = [
-  ["r00",40.48254,-3.63669,15],["r01",40.46697,-3.70666,20],["r02",40.34689,-3.8132,20],
-  ["r03",40.46721,-3.81949,25],["r04",40.47433,-3.67812,8],["r05",40.33551,-3.81389,30],
-  ["r06",40.48862,-3.65524,20],["r07",40.42497,-3.63671,25],["r08",40.39223,-3.65756,25],
-  ["r09",40.49677,-3.72012,30],["r10",40.348,-3.66896,15],["r11",40.38989,-3.64684,30],
-  ["r12",40.40598,-3.62079,12],["r13",40.43576,-3.60821,30],["r14",40.48359,-3.70475,20],
-  ["r15",40.36114,-3.68829,18],["r16",40.44948,-3.7941,10],["r17",40.40079,-3.70247,6],
-  ["r18",40.38554,-3.61641,20],["r19",40.36035,-3.76554,6],["r20",40.42713,-3.61353,12],
-  ["r21",40.39189,-3.61661,18],["r22",40.37847,-3.68848,6],["r23",40.48425,-3.59088,30],
-  ["r24",40.42336,-3.68527,20],["r25",40.4166,-3.73246,30],["r26",40.42085,-3.70362,18],
-  ["r27",40.33029,-3.69037,18],["r28",40.33504,-3.76489,10],["r29",40.36254,-3.79802,30],
-  ["r30",40.47696,-3.75873,8],["r31",40.333,-3.81651,15],["r32",40.34971,-3.67005,18],
-  ["r33",40.36014,-3.75875,10],["r34",40.44668,-3.74932,18],["r35",40.35055,-3.74512,18],
-  ["r36",40.36385,-3.7939,30],["r37",40.5038,-3.7164,6],["r38",40.40152,-3.81152,10],
-  ["r39",40.42114,-3.7176,12],["r40",40.44354,-3.65319,25],["r41",40.44673,-3.72522,18],
-  ["r42",40.40673,-3.64301,10]
-];
-
-const VOLUNTARIOS = [
-  ["v00",40.4876,-3.74647,25],["v01",40.46389,-3.72012,20],["v02",40.43093,-3.61587,30],
-  ["v03",40.47902,-3.61123,30],["v04",40.39245,-3.77062,20],["v05",40.3488,-3.66017,30],
-  ["v06",40.38856,-3.61081,15],["v07",40.36615,-3.74134,25],["v08",40.36835,-3.65813,25],
-  ["v09",40.46823,-3.6922,15],["v10",40.35394,-3.78003,25]
-];
-
-const CENTROS = [
-  ["c0",40.46664,-3.67595],["c1",40.4814,-3.73165],["c2",40.39125,-3.75011],
-  ["c3",40.48614,-3.67504],["c4",40.50178,-3.60706],["c5",40.35436,-3.68772]
-];
-
-/* Voluntario v05 (el caso de reserva de capacidad del motor) */
-const YO = { id: "v05", pos: [40.3488, -3.66017], velocidad: 13, capacidad: 30,
-             desde: 1170, hasta: 1290 };
-const MISION = { recogida: "r25", pos: [40.4166, -3.73246], comidas: 30, caduca: 1288,
-                 centro: "c2", cpos: [40.39125, -3.75011] };
-
-/* ============ Sistema de recompensa / gamificación ============ */
-const PTS_POR_RACION = 10;
-const NIVELES = [          // [umbral de puntos, nombre]
-  [0,   "Nivel 1 · Novato"],
-  [150, "Nivel 2 · Colaborador"],
-  [400, "Nivel 3 · Voluntario"],
-  [900, "Nivel 4 · Rescatador"],
-  [1500,"Nivel 5 · Líder de turno"]
-];
-const OBJETIVO_TURNO = 50; // raciones a salvar en este turno para la insignia
-
-let puntos = 260;            // puntos acumulados antes de esta misión
-let racionesTurno = 20;      // raciones ya salvadas este turno
-let objetivoLogrado = false;
-
-/* ============ Utilidades ============ */
-function proj(lat, lon) {
-  const x = (lon - BBOX.lonMin) / (BBOX.lonMax - BBOX.lonMin) * 800;
-  const y = (BBOX.latMax - lat) / (BBOX.latMax - BBOX.latMin) * 600;
-  return { x, y };
-}
-function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371, toRad = d => d * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-function minToHHMM(min) {
-  const h = Math.floor(min / 60), m = Math.round(min % 60);
-  return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
-}
-function nivelInfo(pts) {
-  let idx = 0;
-  for (let i = 0; i < NIVELES.length; i++) if (pts >= NIVELES[i][0]) idx = i;
-  const [umbral, nombre] = NIVELES[idx];
-  const next = NIVELES[idx + 1];
-  const prog = next ? (pts - umbral) / (next[0] - umbral) : 1;
-  return { idx, nombre, prog: Math.min(prog, 1) };
-}
-
-/* ============ Estado ============ */
-const app = document.getElementById("app");
-let anim = null;
-let currentMin = 1140;
-
-function refreshHeader() {
-  document.getElementById("pointsNum").textContent = puntos;
-  const info = nivelInfo(puntos);
-  document.getElementById("levelLabel").textContent = info.nombre;
-  document.getElementById("lvlFill").style.width = (info.prog * 100) + "%";
-}
-function setClock(min) { document.getElementById("clock").textContent = minToHHMM(min); }
-function clearAnim() { if (anim) { cancelAnimationFrame(anim); anim = null; } }
-function turnoRestante() { return Math.max(0, YO.hasta - currentMin); }
-
-/* ============ Pantallas ============ */
-function renderMission() {
-  clearAnim();
-  const tViaje = Math.round(haversineKm(YO.pos[0], YO.pos[1], MISION.pos[0], MISION.pos[1]) / YO.velocidad * 60);
-  const premio = MISION.comidas * PTS_POR_RACION;
-  app.innerHTML = `
-    <div class="card">
-      <div class="kicker">Nueva misión asignada</div>
-      <div class="title" style="margin-top:4px">Recogida de ${MISION.comidas} raciones</div>
-      <div class="subtitle" style="margin-top:4px">Recogida <b>${MISION.recogida}</b> · entrega en centro <b>${MISION.centro}</b></div>
-      <div class="meta">
-        <div class="chip"><span>🥫</span><b>${MISION.comidas}</b>&nbsp;raciones</div>
-        <div class="chip"><span>🕐</span>caduca <b>${minToHHMM(MISION.caduca)}</b></div>
-        <div class="chip"><span>🚲</span><b>${tViaje}</b> min de viaje</div>
-        <div class="chip reward-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.6L21 9l-5.2 4 1.6 6.6L12 16l-5.4 3.6L8.2 13 3 9l6.6-.4L12 2z"/></svg>+${premio} pts</div>
-      </div>
-      <div class="rationale">
-        <div class="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.6 4.9L19 8l-4.4 3.2L16 16l-4-2.5L8 16l1.4-4.8L5 8l5.4-1.1L12 2z"/></svg>Por qué esta misión</div>
-        Por tu capacidad de transporte (puedes llevar hasta <b>${YO.capacidad} raciones</b>), eres uno de los pocos voluntarios de la zona que puede recoger esta donación importante antes de que caduque. ¡Contamos contigo!
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="kicker">Tu turno</div>
-      <div class="goal-row" style="margin-top:6px">
-        <span>Objetivo del turno · salvar <b>${OBJETIVO_TURNO}</b> raciones</span>
-        <span class="g-num">${racionesTurno}/${OBJETIVO_TURNO}</span>
-      </div>
-      <div class="progress" style="margin-top:8px"><div class="bar" style="width:${(racionesTurno/OBJETIVO_TURNO*100)}%"></div></div>
-      <div class="goal-row" style="margin-top:10px">
-        <span>Turno restante</span>
-        <span class="g-num">${minToHHMM(YO.hasta)} · ${turnoRestante()} min</span>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-ghost" onclick="renderDecline()">Rechazar</button>
-      <button class="btn btn-primary" onclick="accept()">Aceptar misión</button>
-    </div>
-  `;
-}
-
-function renderDecline() {
-  clearAnim();
-  app.innerHTML = `
-    <div class="card impact">
-      <div class="ring"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#a33b3b" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM8 8l8 8M16 8l-8 8"/></svg></div>
-      <div class="title">Misión rechazada</div>
-      <div class="subtitle" style="margin-top:6px">El motor reasignará esta recogida a la siguiente opción disponible. En esta demo no hay otra persona capaz a tiempo, así que esas 30 raciones se perderían.</div>
-    </div>
-    <button class="btn btn-primary" onclick="renderMission()">Volver</button>
-  `;
-}
-
-function accept() {
-  clearAnim();
-  transit(MISION.pos, "Recogida", () => renderPickup());
-}
-
-function transit(to, objetivo, onArrive) {
-  const from = [currentLat, currentLon];
-  const km = haversineKm(from[0], from[1], to[0], to[1]);
-  const durMin = km / YO.velocidad * 60;
-  const animSec = Math.min(durMin * 0.22, 12);
-  const start = performance.now();
-
-  app.innerHTML = `
-    <div class="card">
-      <div class="kicker">En camino</div>
-      <div class="title" style="margin-top:4px">Hacia la ${objetivo.toLowerCase()}</div>
-      <div class="subtitle" style="margin-top:4px">${Math.round(km*10)/10} km · llega en unos ${Math.round(durMin)} min</div>
-    </div>
-    <div class="eta"><b id="etaTxt">${Math.round(durMin)} min</b> restantes</div>
-    <div class="mapwrap" id="mapWrap"></div>
-    <div class="progress"><div class="bar" id="prog"></div></div>
-  `;
-
-  const wrap = document.getElementById("mapWrap");
-  const svg = buildMap(from, to);
-  wrap.appendChild(svg);
-  const marker = wrap.querySelector("#self");
-
-  let p0 = proj(from[0], from[1]), p1 = proj(to[0], to[1]);
-
-  function frame(now) {
-    const t = Math.min((now - start) / (animSec * 1000), 1);
-    const x = p0.x + (p1.x - p0.x) * t;
-    const y = p0.y + (p1.y - p0.y) * t;
-    marker.setAttribute("cx", x);
-    marker.setAttribute("cy", y);
-    document.getElementById("prog").style.width = (t * 100) + "%";
-    document.getElementById("etaTxt").textContent = Math.round(durMin * (1 - t)) + " min";
-    if (t < 1) {
-      anim = requestAnimationFrame(frame);
-    } else {
-      currentLat = to[0]; currentLon = to[1];
-      onArrive();
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NextFood · sistema UI v4</title>
+  <style>
+    :root {
+      --solid: #1F7A4D;
+      --tint: #D9F2E0;
+      --tint2: #B7E4C7;
+      --progress: #74C69D;
+      --line: #CBD8CF;
+      --ink: #26332C;
+      --ink-soft: #6B7A70;
+      --amber: #C2872E;
+      --blue: #7FB3D3;
+      --danger: #B4533A;
+      --heart: #E2574C;
+      --muted: #ECE7DF;
+      --bg: #FBF7EF;
+      --card: #fff;
+      --r: 20px;
+      --shadow: 0 8px 24px rgba(31, 60, 40, .06);
+      --sheet-shadow: 0 -14px 38px rgba(31, 60, 40, .16);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-  }
-  anim = requestAnimationFrame(frame);
-}
 
-function buildMap(from, to) {
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("viewBox", "0 0 800 600");
+    * {
+      box-sizing: border-box
+    }
 
-  const add = (tag, attrs) => {
-    const el = document.createElementNS(ns, tag);
-    for (const k in attrs) el.setAttribute(k, attrs[k]);
-    svg.appendChild(el);
-    return el;
-  };
+    body {
+      margin: 0;
+      background: #efe9df;
+      color: var(--ink);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      padding: 34px;
+      -webkit-font-smoothing: antialiased
+    }
 
-  RECOGIDAS.forEach(([id, la, lo, n]) => {
-    const p = proj(la, lo);
-    const mine = id === MISION.recogida;
-    add("circle", { cx: p.x, cy: p.y, r: mine ? 7 : 3.2,
-      fill: mine ? "#2e7d4f" : "#c7c2b8", stroke: mine ? "#fff" : "none", "stroke-width": mine ? 2 : 0 });
-    if (mine) add("text", { x: p.x, y: p.y - 12, "text-anchor": "middle", class: "maplabel", fill: "#235e3b" }).textContent = id;
-  });
+    .phone {
+      width: 348px;
+      height: 740px;
+      background: var(--bg);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px
+    }
 
-  CENTROS.forEach(([id, la, lo]) => {
-    const p = proj(la, lo);
-    const dest = id === MISION.centro;
-    add("rect", { x: p.x - 6, y: p.y - 6, width: 12, height: 12, rx: 3,
-      fill: dest ? "#b7791f" : "#d8d2c7", stroke: "#fff", "stroke-width": 1.5 });
-    add("text", { x: p.x, y: p.y + 20, "text-anchor": "middle", class: "maplabel" }).textContent = id;
-  });
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      padding: 0 0 132px;
+      scrollbar-width: none
+    }
 
-  VOLUNTARIOS.forEach(([id, la, lo]) => {
-    if (id === YO.id) return;
-    const p = proj(la, lo);
-    add("circle", { cx: p.x, cy: p.y, r: 3.5, fill: "#9aa3b2", opacity: .7 });
-  });
+    .screen::-webkit-scrollbar {
+      display: none
+    }
 
-  const p0 = proj(from[0], from[1]), p1 = proj(to[0], to[1]);
-  add("path", { id: "route", d: `M ${p0.x} ${p0.y} L ${p1.x} ${p1.y}`,
-    stroke: "#2e7d4f", "stroke-width": 2.5, "stroke-dasharray": "6 6", fill: "none", opacity: .8 });
+    /* ===== status bar + header ===== */
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: none;
+      padding: 11px 4px 2px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink)
+    }
 
-  add("circle", { id: "self", cx: p0.x, cy: p0.y, r: 8, fill: "#1a1a1a", stroke: "#fff", "stroke-width": 2.5 });
+    .statusbar .sb-r {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
 
-  return svg;
-}
+    .statusbar svg {
+      width: 15px;
+      height: 15px;
+      fill: var(--ink)
+    }
 
-function renderPickup() {
-  clearAnim();
-  app.innerHTML = `
-    <div class="card">
-      <div class="kicker">Has llegado</div>
-      <div class="title" style="margin-top:4px">Recoge la comida</div>
-      <div class="subtitle" style="margin-top:4px">Confirmar que cargas las <b>${MISION.comidas} raciones</b> de ${MISION.recogida}.</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div class="kicker">Carga confirmada</div>
-      <div class="big">${MISION.comidas}</div>
-      <div class="unit">raciones en tu caja</div>
-    </div>
-    <button class="btn btn-primary" onclick="deliverLeg()">Entregar en ${MISION.centro}</button>
-  `;
-}
+    .statusbar .bat {
+      font-size: 10px;
+      font-weight: 800;
+      border: 1.4px solid var(--ink);
+      border-radius: 4px;
+      padding: 1px 3px;
+      line-height: 1
+    }
 
-function deliverLeg() {
-  clearAnim();
-  transit(MISION.cpos, "Centro " + MISION.centro, () => renderDeliver());
-}
+    .head {
+      display: flex;
+      align-items: center;
+      flex: none;
+      padding: 6px 2px 12px
+    }
 
-function renderDeliver() {
-  clearAnim();
-  currentMin = MISION.caduca - 40;
-  setClock(currentMin);
-  app.innerHTML = `
-    <div class="card">
-      <div class="kicker">Centro ${MISION.centro}</div>
-      <div class="title" style="margin-top:4px">Entrega completada</div>
-      <div class="subtitle" style="margin-top:4px">Las ${MISION.comidas} raciones quedan registradas en el banco de alimentos.</div>
-    </div>
-    <button class="btn btn-primary" onclick="renderImpact()">Ver recompensa</button>
-  `;
-}
+    .spacer {
+      flex: 1
+    }
 
-function renderImpact() {
-  clearAnim();
-  const premio = MISION.comidas * PTS_POR_RACION;
-  racionesTurno += MISION.comidas;
-  const nuevoPuntos = puntos + premio;
-  const antes = nivelInfo(puntos).idx;
-  const despues = nivelInfo(nuevoPuntos).idx;
-  const subioNivel = despues > antes;
-  const alcanzoObjetivo = !objetivoLogrado && racionesTurno >= OBJETIVO_TURNO;
-  if (alcanzoObjetivo) objetivoLogrado = true;
-  puntos = nuevoPuntos;
-  refreshHeader();
+    .ava {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.6px solid var(--line);
+      background: var(--tint);
+      display: grid;
+      place-items: center;
+      flex: none;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--solid)
+    }
 
-  const bannerNivel = subioNivel ? `
-    <div class="badge-banner">
-      <div class="medal">↑</div>
-      <div><div class="bd-title">¡Has subido de nivel!</div>
-      <div class="bd-sub">${nivelInfo(puntos).nombre}</div></div>
-    </div>` : "";
-  const bannerObjetivo = alcanzoObjetivo ? `
-    <div class="badge-banner">
-      <div class="medal">🏅</div>
-      <div><div class="bd-title">Objetivo del turno cumplido</div>
-      <div class="bd-sub">${OBJETIVO_TURNO} raciones salvadas en este turno</div></div>
-    </div>` : "";
+    .kebab {
+      position: relative;
+      flex: none;
+      margin-left: 0px
+    }
 
-  app.innerHTML = `
-    <div class="card impact">
-      <div class="ring"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2e7d4f" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="stat">${MISION.comidas} raciones</div>
-      <div class="subtitle">salvadas antes de caducar · ${minToHHMM(MISION.caduca)}</div>
-      <div class="points-earned count-up" id="countUp">+0 pts</div>
-      ${bannerNivel}${bannerObjetivo}
-    </div>
+    .kebab>button {
+      width: 24px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 9px;
+      display: grid;
+      place-items: center
+    }
 
-    <div class="card">
-      <div class="kicker">Tu progreso</div>
-      <div class="goal-row" style="margin-top:6px">
-        <span>Objetivo del turno · ${OBJETIVO_TURNO} raciones</span>
-        <span class="g-num">${racionesTurno}/${OBJETIVO_TURNO}</span>
+    .kebab>button:hover {
+      background: #0000000a
+    }
+
+    .kebab>button>svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--ink-soft)
+    }
+
+    .menu {
+      position: absolute;
+      right: 0;
+      top: 38px;
+      width: 212px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(31, 60, 40, .18);
+      padding: 6px;
+      opacity: 0;
+      transform: translateY(-6px) scale(.98);
+      pointer-events: none;
+      transition: .16s ease;
+      z-index: 60
+    }
+
+    .kebab.open .menu {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto
+    }
+
+    .menu-head {
+      padding: 10px 12px 12px
+    }
+
+    .menu-head .nm {
+      font-size: 14.5px;
+      font-weight: 800;
+      letter-spacing: -.2px
+    }
+
+    .menu-head .rw {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 5px
+    }
+
+    .menu-head .rw b {
+      color: var(--ink);
+      font-weight: 700
+    }
+
+    .menu-head .rw .shield {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.7
+    }
+
+    .menu-head .pts {
+      font-size: 12px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 5px
+    }
+
+    .menu-head .pts b {
+      color: var(--solid);
+      font-weight: 800;
+      font-size: 13.5px
+    }
+
+    .menu hr {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 4px 10px
+    }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none
+    }
+
+    .menu a:hover {
+      background: var(--bg)
+    }
+
+    .menu a svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--ink-soft);
+      flex: none
+    }
+
+    .menu a.danger {
+      color: var(--danger)
+    }
+
+    .menu a.danger svg {
+      stroke: var(--danger)
+    }
+
+    /* ===== primitivas ===== */
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 15px
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: .13em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    h2 {
+      margin: 6px 0 3px;
+      font-size: 20px;
+      line-height: 1.15;
+      letter-spacing: -.3px
+    }
+
+    .sub {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      margin: 6px 0 0
+    }
+
+    /* card de argumento (pitch) */
+    .pitch {
+      background: var(--tint);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 18px 17px
+    }
+
+    .pitch .heart {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 10px
+    }
+
+    .pitch .heart svg {
+      width: 30px;
+      height: 30px;
+      fill: var(--heart)
+    }
+
+    .pitch h2 {
+      font-size: 24px;
+      line-height: 1.12;
+      letter-spacing: -.5px;
+      margin: 0 0 8px;
+      color: #16301f
+    }
+
+    .pitch p {
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0;
+      color: #234f37
+    }
+
+    /* lista recogida/entrega con conector */
+    .leg {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .leg-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 11px;
+      position: relative;
+      padding: 7px 0
+    }
+
+    .leg-item .ic {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      z-index: 1
+    }
+
+    .leg-item .ic svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .leg-item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 13.5px;
+      top: 33px;
+      bottom: -7px;
+      border-left: 1.6px dashed var(--line)
+    }
+
+    .leg-item .lb {
+      font-size: 10.5px;
+      letter-spacing: .06em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    .leg-item .vl {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 1px;
+      line-height: 1.3
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 13px
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.3px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600
+    }
+
+    .pill svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .pill.amber {
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    .pill.amber svg {
+      stroke: var(--amber)
+    }
+
+    /* botones */
+    .acts {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .btn {
+      height: 46px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1.6px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: .15s;
+      width: 100%
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .btn.solid {
+      background: var(--solid);
+      color: #fff
+    }
+
+    .btn.solid:hover {
+      filter: brightness(1.06)
+    }
+
+    .btn.muted {
+      background: var(--muted);
+      color: var(--ink-soft);
+      border-color: transparent;
+      margin-top: 11px
+    }
+
+    .btn.muted:hover {
+      background: #e3ddd2;
+      color: var(--ink)
+    }
+
+    .cancel-link {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      padding: 9px 0 0
+    }
+
+    .cancel-link:hover {
+      color: var(--danger);
+      text-decoration: underline
+    }
+
+    /* mapa + trayecto */
+    .map {
+      position: relative;
+      height: 168px;
+      border: 1.3px solid var(--line);
+      border-radius: 16px;
+      background: #eef3ee;
+      overflow: hidden;
+      margin-top: 12px
+    }
+
+    .map .dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--line)
+    }
+
+    .map .mk {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--solid);
+      border-radius: 50%;
+      background: #fff
+    }
+
+    .map .mk::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--solid)
+    }
+
+    .map .sq {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border: 2px solid var(--amber);
+      background: #fff;
+      border-radius: 2px
+    }
+
+    .map .you {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--ink);
+      box-shadow: 0 0 0 3px #26332c22
+    }
+
+    .map .lbl {
+      position: absolute;
+      font-size: 9.5px;
+      color: var(--ink-soft);
+      font-weight: 700
+    }
+
+    .chip {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      border: 1.3px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .chip svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .trip {
+      margin-top: 12px
+    }
+
+    .trip .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: var(--line);
+      position: relative
+    }
+
+    .trip .bar i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--progress);
+      border-radius: 99px
+    }
+
+    .trip .bar .knob {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.4px solid var(--solid);
+      transform: translate(-50%, -50%)
+    }
+
+    .trip .lab {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    .trip .lab span:first-child {
+      color: var(--ink-soft)
+    }
+
+    .trip .lab b {
+      color: var(--solid)
+    }
+
+    /* stepper carga */
+    .load {
+      text-align: center;
+      border: 1px solid silver;
+      margin-top: 1em;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 8px 0 2px
+    }
+
+    .stepper button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.6px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: var(--ink)
+    }
+
+    .stepper button:hover {
+      border-color: var(--solid);
+      color: var(--solid)
+    }
+
+    .stepper button svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none
+    }
+
+    .stepper .val {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      min-width: 72px;
+      color: var(--ink)
+    }
+
+    .load .cap {
+      font-size: 12px;
+      color: var(--ink-soft)
+    }
+
+    .load .hint {
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      margin-top: 3px;
+      font-style: italic
+    }
+
+    /* éxito */
+    .halo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--tint);
+      border: 2px solid var(--tint2);
+      display: grid;
+      place-items: center;
+      margin: 4px auto 12px
+    }
+
+    .halo svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .succ .num {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px
+    }
+
+    .ach {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1.3px solid var(--line);
+      border-radius: 13px;
+      padding: 10px 11px;
+      margin-top: 9px;
+      text-align: left
+    }
+
+    .ach .ic {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.6px solid var(--amber);
+      display: grid;
+      place-items: center
+    }
+
+    .ach .ic svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--amber);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .ach t {
+      font-size: 12.5px;
+      font-weight: 700;
+      display: block
+    }
+
+    .ach s {
+      font-size: 11px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      display: block;
+      margin-top: 1px
+    }
+
+    /* ===== bottom sheet arrastrable ===== */
+    .sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      box-shadow: var(--sheet-shadow);
+      padding: 0 18px 18px;
+      z-index: 40;
+      will-change: transform;
+      transition: transform .3s cubic-bezier(.22, .61, .36, 1)
+    }
+
+    .sheet.dragging {
+      transition: none
+    }
+
+    .grip-zone {
+      cursor: grab;
+      touch-action: none;
+      padding: 9px 0 2px;
+      user-select: none;
+      -webkit-user-select: none
+    }
+
+    .grip-zone:active {
+      cursor: grabbing
+    }
+
+    .grip {
+      width: 40px;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--line);
+      margin: 0 auto 10px
+    }
+
+    .srow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .srow .sttl {
+      font-size: 10px;
+      letter-spacing: .13em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    .srow .srem {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--solid)
+    }
+
+    .tl {
+      margin-top: 9px
+    }
+
+    .tl .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: var(--line);
+      position: relative
+    }
+
+    .tl .bar i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--progress);
+      border-radius: 99px
+    }
+
+    .tl .bar .now {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.4px solid var(--solid);
+      transform: translate(-50%, -50%)
+    }
+
+    .tl .lab {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--ink-soft)
+    }
+
+    .tl .lab b {
+      color: var(--ink)
+    }
+
+    .sheet-detail {
+      padding-top: 13px
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px
+    }
+
+    .stat {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1.3px solid var(--line);
+      border-radius: 13px;
+      padding: 9px 11px
+    }
+
+    .stat .ic {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: var(--tint);
+      display: grid;
+      place-items: center;
+      flex: none
+    }
+
+    .stat .ic svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .stat .v {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .stat .k {
+      font-size: 10px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 2px
+    }
+
+    /* ── Mission Stepper ─────────────────────────────── */
+    .mission-stepper {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px 8px 14px;
+      margin: 12px 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06), 0 4px 12px rgba(0, 0, 0, .04);
+      position: relative;
+    }
+
+    .mission-stepper__title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #8a8a8a;
+      margin: 0 0 16px 4px;
+      text-align: center;
+    }
+
+    .mission-stepper__track {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    /* línea conectora de fondo */
+    .mission-stepper__track::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 24px;
+      right: 24px;
+      height: 3px;
+      background: #e6e6e6;
+      border-radius: 2px;
+      z-index: 0;
+    }
+
+    /* progreso de la línea (se controla con clase en el track) */
+    .mission-stepper__track::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 24px;
+      height: 3px;
+      background: #2e7d32;
+      border-radius: 2px;
+      z-index: 1;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* anchos de progreso por estado */
+    .mission-stepper__track--p0::after {
+      width: 0;
+    }
+
+    .mission-stepper__track--p1::after {
+      width: calc(33.33% - 16px);
+    }
+
+    .mission-stepper__track--p2::after {
+      width: calc(66.66% - 8px);
+    }
+
+    .mission-stepper__track--p3::after {
+      width: calc(100% - 48px);
+    }
+
+    /* step individual */
+    .mission-stepper__step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* círculo */
+    .mission-stepper__dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      transition: all .35s ease;
+      flex-shrink: 0;
+    }
+
+    /* estados del círculo */
+    .mission-stepper__dot--pending {
+      background: #ececec;
+      color: #aaa;
+    }
+
+    .mission-stepper__dot--active {
+      background: #2e7d32;
+      color: #fff;
+      box-shadow: 0 0 0 5px rgba(46, 125, 50, .18);
+      animation: stepper-pulse 2s ease-in-out infinite;
+    }
+
+    .mission-stepper__dot--done {
+      background: #2e7d32;
+      color: #fff;
+    }
+
+    /* check SVG dentro del dot done */
+    .mission-stepper__dot--done svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* etiqueta */
+    .mission-stepper__label {
+      font-size: 10.5px;
+      line-height: 1.3;
+      text-align: center;
+      color: #aaa;
+      max-width: 72px;
+      transition: color .3s ease;
+    }
+
+    .mission-stepper__label--active {
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .mission-stepper__label--done {
+      color: #444;
+      font-weight: 600;
+    }
+
+    @keyframes stepper-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 5px rgba(46, 125, 50, .18);
+      }
+
+      50% {
+        box-shadow: 0 0 0 9px rgba(46, 125, 50, .08);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linejoin="round">
+        <path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 16.5 7.2 18.7l.9-5.5-4-3.9 5.5-.8z" />
+      </symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24">
+        <path d="M12 20.5S3.5 14.8 3.5 8.9A4.4 4.4 0 0 1 12 6.7a4.4 4.4 0 0 1 8.5 2.2c0 5.9-8.5 11.6-8.5 11.6z" />
+      </symbol>
+      <symbol id="i-dots" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="1.7" />
+        <circle cx="12" cy="12" r="1.7" />
+        <circle cx="12" cy="19" r="1.7" />
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" />
+      </symbol>
+      <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round">
+        <circle cx="12" cy="8" r="3.4" />
+        <path d="M5 19c1.2-3.2 4-4.6 7-4.6s5.8 1.4 7 4.6" />
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round">
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M12 7.5V12l3 2" />
+      </symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" />
+      </symbol>
+      <symbol id="i-head" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
+        <path d="M4 13h2.5v5H5a1 1 0 0 1-1-1zM20 13h-2.5v5H19a1 1 0 0 0 1-1z" />
+      </symbol>
+      <symbol id="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M14 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h9" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </symbol>
+      <symbol id="i-power" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round">
+        <path d="M12 4v8" />
+        <path d="M7.5 6.5a7 7 0 1 0 9 0" />
+      </symbol>
+      <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round">
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.2 2.4c-.7.3-1.2.9-1.2 1.7v.3" />
+        <circle cx="12" cy="16.6" r=".6" fill="currentColor" />
+      </symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 5h14v10H9l-4 3z" />
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z" />
+        <circle cx="12" cy="11" r="2.2" />
+      </symbol>
+      <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
+        <path d="M3 9l1.5-4h15L21 9M9 20v-5h6v5" />
+      </symbol>
+      <symbol id="i-basket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 9h14l-1.3 9.2a2 2 0 0 1-2 1.8H8.3a2 2 0 0 1-2-1.8z" />
+        <path d="M8.5 9 11 4M15.5 9 13 4M10 13v3M14 13v3" />
+      </symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z" />
+        <circle cx="7" cy="18" r="1.8" />
+        <circle cx="17.5" cy="18" r="1.8" />
+      </symbol>
+      <symbol id="i-road" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round">
+        <path d="M7 4 4 20M17 4l3 16M12 5v2M12 11v2M12 17v2" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 13l4 4 10-11" />
+      </symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h13M13 6l6 6-6 6" />
+      </symbol>
+      <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M12 19V6M6 11l6-6 6 6" />
+      </symbol>
+      <symbol id="i-medal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="9" r="5" />
+        <path d="M9 13l-1.5 8L12 18.5 16.5 21 15 13" />
+      </symbol>
+      <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />
+        <path d="M4 7.5 12 12l8-4.5M12 12v9" />
+      </symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+        <path d="M6 12h12" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+        <path d="M12 6v12M6 12h12" />
+      </symbol>
+      <symbol id="i-sig" viewBox="0 0 24 24">
+        <rect x="2" y="14" width="3" height="6" rx="1" />
+        <rect x="7" y="10" width="3" height="10" rx="1" />
+        <rect x="12" y="6" width="3" height="14" rx="1" />
+        <rect x="17" y="3" width="3" height="17" rx="1" />
+      </symbol>
+      <symbol id="i-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 8.5a14 14 0 0 1 18 0M6 12a9 9 0 0 1 12 0M9 15.5a4.5 4.5 0 0 1 6 0" />
+        <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ============ 1 · MISIÓN ASIGNADA ============ -->
+  <section class="phone" data-name="Alberto Marín" data-pts="260" data-lvl="Colaborador" data-raciones="20" data-km="12"
+    data-now="19:48" data-rem="102 min" data-pct="15">
+    <div class="screen">
+      <div class="pitch">
+        <span class="heart"><svg>
+            <use href="#i-heart" />
+          </svg></span>
+        <h2>Marca la diferencia</h2>
+        <p>Este pedido es prioritario. Por tu capacidad de transporte eres de los pocos que puede recogerlo antes de que
+          caduque.</p>
       </div>
-      <div class="progress" style="margin-top:8px"><div class="bar" style="width:${(racionesTurno/OBJETIVO_TURNO*100)}%"></div></div>
-      <div class="goal-row" style="margin-top:10px">
-        <span>Puntos totales</span>
-        <span class="g-num">${puntos} pts</span>
+
+      <div class="card">
+        <span class="eyebrow">Nueva misión</span>
+        <div class="leg">
+          <div class="leg-item">
+            <span class="ic"><svg>
+                <use href="#i-store" />
+              </svg></span>
+            <span><span class="lb">Recogida</span>
+              <p class="vl">Supermercado El Huerto <br> C/ Mayor 12</p>
+            </span>
+          </div>
+          <div class="leg-item">
+            <span class="ic"><svg>
+                <use href="#i-pin" />
+              </svg></span>
+            <span><span class="lb">Entrega</span>
+              <p class="vl">Comedor Lavapiés <br>C/ Tribulete 24</p>
+            </span>
+          </div>
+        </div>
+        <div class="pills">
+          <span class="pill"><svg>
+              <use href="#i-box" />
+            </svg>30 raciones</span>
+          <span class="pill amber"><svg>
+              <use href="#i-clock" />
+            </svg>caduca 21:28</span>
+          <span class="pill"><svg>
+              <use href="#i-truck" />
+            </svg>unos 40 min</span>
+          <span class="pill"><svg>
+              <use href="#i-star" />
+            </svg>+300 pts</span>
+        </div>
       </div>
-      <div class="goal-row" style="margin-top:6px">
-        <span>Turno restante</span>
-        <span class="g-num">${turnoRestante()} min</span>
+
+      <div class="acts">
+        <button class="btn solid"><svg>
+            <use href="#i-check" />
+          </svg>Aceptar misión</button>
+        <button class="cancel-link">No puedo hacer esta misión</button>
       </div>
     </div>
+  </section>
 
-    <div class="card">
-      <div class="rationale" style="margin-top:0">
-        <div class="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.6 4.9L19 8l-4.4 3.2L16 16l-4-2.5L8 16l1.4-4.8L5 8l5.4-1.1L12 2z"/></svg>Cómo encaja en el turno</div>
-        Esta era la recogida que el motor reservaba para ti: la mayor que podías cargar con tu capacidad y aún a tiempo. Otras misiones más pequeñas se repartieron entre el resto de personas.
+  <!-- ============ 2 · EN CAMINO ============ -->
+  <section class="phone" data-name="Alberto Marín" data-pts="260" data-lvl="Colaborador" data-raciones="20" data-km="18"
+    data-now="20:06" data-rem="84 min" data-pct="30">
+    <div class="screen">
+      <!-- ▸ Stepper: Misión asignada — Pantalla 2 (step 1 activo) -->
+      <div class="mission-stepper">
+        <p class="mission-stepper__title">Misión asignada</p>
+        <div class="mission-stepper__track mission-stepper__track--p0">
+
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--active">1</div>
+            <span class="mission-stepper__label mission-stepper__label--active">Ir al punto de recogida</span>
+          </div>
+
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--pending">2</div>
+            <span class="mission-stepper__label">Confirmar carga</span>
+          </div>
+
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--pending">3</div>
+            <span class="mission-stepper__label">Ir al punto de recepción</span>
+          </div>
+
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--pending">4</div>
+            <span class="mission-stepper__label">Confirmar entrega</span>
+          </div>
+
+        </div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">En camino</span>
+        <h2>Al punto de recogida</h2>
+        <p class="sub" style="display:flex;align-items:center;gap:5px"><svg
+            style="width:18px;height:18px;stroke:var(--solid);fill:none;stroke-width:1.8">
+            <use href="#i-pin" />
+          </svg>Supermercado El Huerto<br>C/ Mayor 12, Chamberí</p>
+        <div class="map">
+          <span class="chip"><svg>
+              <use href="#i-clock" />
+            </svg>1:31 h para caducidad</span>
+          <svg viewBox="0 0 300 168" style="position:absolute;inset:0;width:100%;height:100%">
+            <path d="M118 134 C150 108 176 90 202 88" fill="none" stroke="#1F7A4D" stroke-width="2"
+              stroke-dasharray="5 5" />
+          </svg>
+          <span class="dot" style="left:42%;top:22%"></span><span class="lbl" style="left:44%;top:21%">c1</span>
+          <span class="dot" style="left:70%;top:28%"></span><span class="lbl" style="left:72%;top:27%">c2</span>
+          <span class="dot" style="left:30%;top:36%"></span><span class="lbl" style="left:24%;top:35%">r5</span>
+          <span class="dot" style="left:14%;top:52%"></span><span class="lbl" style="left:8%;top:51%">r1</span>
+          <span class="dot" style="left:78%;top:54%"></span><span class="lbl" style="left:80%;top:53%">c4</span>
+          <span class="dot" style="left:50%;top:68%"></span><span class="lbl" style="left:52%;top:67%">r5</span>
+          <span class="mk" style="left:37%;top:77%"></span><span class="lbl" style="left:33%;top:83%">El Huerto</span>
+          <span class="you" style="left:64%;top:47%"></span>
+          <span class="sq" style="left:67%;top:47%"></span><span class="lbl" style="left:62%;top:53%">tu ruta</span>
+        </div>
+        <div class="trip">
+          <div class="bar"><i style="width:66%"></i><span class="knob" style="left:66%"></span></div>
+          <div class="lab"><span>recorrido 6.5 km</span><span><b>ETA 18 min</b> · faltan 3.2 km</span></div>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn solid"><svg>
+            <use href="#i-pin" />
+          </svg>Confirmar llegada</button>
+        <button class="cancel-link">Cancelo la recogida</button>
       </div>
     </div>
+  </section>
 
-    <button class="btn btn-primary" onclick="restart()">Simular siguiente misión</button>
-  `;
+  <!-- ============ 3 · RECOGIDA ============ -->
+  <section class="phone" data-name="Alberto Marín" data-pts="260" data-lvl="Colaborador" data-raciones="20" data-km="24"
+    data-now="20:24" data-rem="66 min" data-pct="48">
+    <div class="screen">
+      <!-- ▸ Stepper: Misión asignada — Pantalla 3 (step 2 activo) -->
+      <div class="mission-stepper">
+        <p class="mission-stepper__title">Misión asignada</p>
+        <div class="mission-stepper__track mission-stepper__track--p1">
 
-  // animación de cuenta de puntos
-  const el = document.getElementById("countUp");
-  const dur = 700, t0 = performance.now();
-  function tick(now) {
-    const t = Math.min((now - t0) / dur, 1);
-    el.textContent = "+" + Math.round(premio * t) + " pts";
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--done">
+              <svg viewBox="0 0 24 24">
+                <polyline points="4 12 10 18 20 6" />
+              </svg>
+            </div>
+            <span class="mission-stepper__label mission-stepper__label--done">Ir al punto de recogida</span>
+          </div>
 
-function restart() {
-  currentLat = YO.pos[0]; currentLon = YO.pos[1];
-  currentMin = 1140; setClock(currentMin);
-  renderMission();
-}
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--active">2</div>
+            <span class="mission-stepper__label mission-stepper__label--active">Confirmar carga</span>
+          </div>
 
-/* ============ Arranque ============ */
-let currentLat = YO.pos[0], currentLon = YO.pos[1];
-setClock(currentMin);
-refreshHeader();
-renderMission();
-</script>
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--pending">3</div>
+            <span class="mission-stepper__label">Ir al punto de recepción</span>
+          </div>
+
+          <div class="mission-stepper__step">
+            <div class="mission-stepper__dot mission-stepper__dot--pending">4</div>
+            <span class="mission-stepper__label">Confirmar entrega</span>
+          </div>
+
+        </div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Has llegado</span>
+        <h2>Recoge la comida</h2>
+        <p class="sub" style="display:flex;align-items:center;gap:5px">
+          <svg style="width:18px;height:18px;stroke:var(--solid);fill:none;stroke-width:1.8">
+            <use href="#i-pin" />
+          </svg>Supermercado El Huerto<br>C/ Mayor 12, Chamberí
+        </p>
+        <p class="">Confirma cuántas raciones cargas realmente:</p>
+        <div class="card load">
+          <span class="eyebrow">Carga confirmada</span>
+          <div class="stepper" data-value="30">
+            <button class="st-minus" aria-label="Quitar ración"><svg>
+                <use href="#i-minus" />
+              </svg></button>
+            <span class="val">30</span>
+            <button class="st-plus" aria-label="Añadir ración"><svg>
+                <use href="#i-plus" />
+              </svg></button>
+          </div>
+          <div class="cap">raciones en tu caja</div>
+          <div class="hint">ajusta el número si el resultado difiere del previsto</div>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn solid"><svg>
+            <use href="#i-truck" />
+          </svg>Confirmo la carga y la entrego</button>
+        <button class="cancel-link">Cancelo la recogida</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 · ÉXITO ============ -->
+  <section class="phone" data-name="Alberto Marín" data-pts="560" data-lvl="Voluntario" data-raciones="50" data-km="31"
+    data-now="20:48" data-rem="42 min" data-pct="78">
+    <div class="screen">
+      <div class="card succ" style="text-align:center">
+        <div class="halo"><svg>
+            <use href="#i-check" />
+          </svg></div>
+        <div class="num">30 raciones</div>
+        <p class="sub" style="display:flex;align-items:center;justify-content:center;gap:5px"><svg
+            style="width:13px;height:13px;stroke:var(--solid);fill:none;stroke-width:1.8">
+            <use href="#i-clock" />
+          </svg>salvadas antes de caducar · 21:28</p>
+        <span class="pill amber" style="margin-top:9px;display:inline-flex"><svg>
+            <use href="#i-star" />
+          </svg>+300 pts</span>
+        <div class="ach">
+          <span class="ic"><svg>
+              <use href="#i-up" />
+            </svg></span>
+          <span>
+            <t>¡Has subido de nivel!</t><s>Voluntario</s>
+          </span>
+        </div>
+        <div class="ach">
+          <span class="ic"><svg>
+              <use href="#i-medal" />
+            </svg></span>
+          <span>
+            <t>Objetivo inicial cumplido</t><s>50 raciones salvadas hoy</s>
+          </span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn solid"><svg>
+            <use href="#i-arrow" />
+          </svg>Siguiente misión</button>
+        <button class="cancel-link">Terminar mi turno por hoy</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* ---------- HEADER inyectado: status bar + (avatar + kebab) ---------- */
+    function header(p) {
+      const d = p.dataset;
+      return `
+  <div class="statusbar">
+    <span>${d.now}</span>
+    <span class="sb-r">
+      <svg><use href="#i-sig"/></svg>
+      <svg><use href="#i-wifi"/></svg>
+      <span class="bat">85</span>
+    </span>
+  </div>
+  <header class="head">
+    <span>
+    <img src="assets/logo_trans.png" width="70" alt="nextfood">
+    </span>
+    <span class="spacer"></span>
+    <span class="ava">A</span>
+    <div class="kebab">
+      <button aria-haspopup="true" aria-expanded="false" aria-label="Más opciones"><svg><use href="#i-dots"/></svg></button>
+      <div class="menu" role="menu">
+        <div class="menu-head">
+          <div class="nm">${d.name}</div>
+          <div class="rw">Nivel: <b>${d.lvl}</b> <svg class="shield"><use href="#i-shield"/></svg></div>
+          <div class="pts">Puntos actuales: <b>${Number(d.pts).toLocaleString('es-ES')}</b></div>
+        </div>
+        <hr>
+        <a role="menuitem" href="#"><svg><use href="#i-user"/></svg>Mi perfil</a>
+        <a role="menuitem" href="#" class="danger"><svg><use href="#i-x"/></svg>Cancelar misión</a>
+        <a role="menuitem" href="#" class="danger"><svg><use href="#i-power"/></svg>Terminar mi turno</a>
+        <hr>
+        <a role="menuitem" href="#"><svg><use href="#i-help"/></svg>FAQ</a>
+        <a role="menuitem" href="#"><svg><use href="#i-chat"/></svg>Contactar equipo</a>
+      </div>
+    </div>
+  </header>`;
+    }
+
+    /* ---------- SHEET: barra+tiempos SIEMPRE visibles; raciones/km solo al desplegar ---------- */
+    function sheet(p) {
+      const d = p.dataset;
+      return `<div class="sheet">
+    <div class="grip-zone" role="button" tabindex="0" aria-expanded="false" aria-label="Mostrar u ocultar panel del turno">
+      <div class="grip"></div>
+      <div class="srow"><span class="sttl">Tu ayuda hoy</span><span class="srem">te quedan ${d.rem}</span></div>
+      <div class="tl">
+        <div class="bar"><i style="width:${d.pct}%"></i><span class="now" style="left:${d.pct}%"></span></div>
+        <div class="lab"><span>19:30</span><span>ahora <b>${d.now}</b></span><span>21:30</span></div>
+      </div>
+    </div>
+    <div class="sheet-detail">
+      <div class="stats">
+        <div class="stat"><span class="ic"><svg><use href="#i-basket"/></svg></span>
+          <span><span class="v">${d.raciones}</span><br><span class="k"> raciones salvadas</span></span></div>
+        <div class="stat"><span class="ic"><svg><use href="#i-road"/></svg></span>
+          <span><span class="v">${d.km}</span><br><span class="k">km recorridos</span></span></div>
+      </div>
+    </div>
+  </div>`;
+    }
+
+    document.querySelectorAll('.phone').forEach(p => {
+      p.insertAdjacentHTML('afterbegin', header(p));
+      p.insertAdjacentHTML('beforeend', sheet(p));
+    });
+
+    /* ---------- kebab ---------- */
+    document.addEventListener('click', e => {
+      const kb = e.target.closest('.kebab');
+      document.querySelectorAll('.kebab.open').forEach(k => {
+        if (k !== kb) { k.classList.remove('open'); k.querySelector('button').setAttribute('aria-expanded', 'false'); }
+      });
+      if (kb) { const o = kb.classList.toggle('open'); kb.querySelector('button').setAttribute('aria-expanded', o); }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape')
+        document.querySelectorAll('.kebab.open').forEach(k => { k.classList.remove('open'); k.querySelector('button').setAttribute('aria-expanded', 'false'); });
+    });
+
+    /* ---------- stepper ---------- */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('.st-minus,.st-plus'); if (!b) return;
+      const st = b.closest('.stepper');
+      let v = parseInt(st.dataset.value, 10) + (b.classList.contains('st-plus') ? 1 : -1);
+      v = Math.max(0, Math.min(99, v)); st.dataset.value = v; st.querySelector('.val').textContent = v;
+    });
+
+    /* ---------- bottom sheet arrastrable ---------- */
+    function initSheet(phone) {
+      const sh = phone.querySelector('.sheet'), zone = phone.querySelector('.grip-zone');
+      let maxT = 0, startT = 0, curT = 0, startY = 0, moved = 0, dragging = false, pid = null;
+      const measure = () => { maxT = Math.max(0, sh.offsetHeight - zone.offsetHeight); };
+      const apply = t => { curT = t; sh.style.transform = `translateY(${t}px)`; zone.setAttribute('aria-expanded', t === 0); };
+      measure(); apply(maxT);
+      requestAnimationFrame(() => { measure(); apply(maxT); });
+      window.addEventListener('load', () => { measure(); apply(maxT); });
+      window.addEventListener('resize', () => { measure(); apply(Math.min(curT, maxT)); });
+      zone.addEventListener('pointerdown', e => { dragging = true; moved = 0; startT = curT; startY = e.clientY; pid = e.pointerId; zone.setPointerCapture(pid); sh.classList.add('dragging'); });
+      zone.addEventListener('pointermove', e => { if (!dragging) return; const dy = e.clientY - startY; moved = Math.max(moved, Math.abs(dy)); apply(Math.max(0, Math.min(maxT, startT + dy))); });
+      function end() {
+        if (!dragging) return; dragging = false; sh.classList.remove('dragging'); try { zone.releasePointerCapture(pid); } catch (_) { }
+        if (moved < 5) apply(curT < maxT / 2 ? maxT : 0); else apply(curT < maxT / 2 ? 0 : maxT);
+      }
+      zone.addEventListener('pointerup', end); zone.addEventListener('pointercancel', end);
+      zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apply(curT === 0 ? maxT : 0); } });
+    }
+    document.querySelectorAll('.phone').forEach(initSheet);
+  </script>
 </body>
+
 </html>
