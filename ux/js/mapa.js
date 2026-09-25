@@ -16,7 +16,11 @@ import { nombreDe, posDe, esCentro } from "./nombres.js";
 function pin(id, { yo = false, destino = false } = {}) {
   const { x, y } = posDe(id);
   const clase = yo ? "you" : (destino ? "mk" : "dot");
-  const etiqueta = yo ? "" : `<span class="lbl" style="left:${x}%;top:${y}%">${nombreDe(id)}</span>`;
+  /* El rotulo se ancla al lado con sitio: si el punto esta en la mitad
+     derecha, el texto va hacia la izquierda y no se sale del recuadro. */
+  const anclaje = x > 50 ? "lbl--izq" : "lbl--der";
+  const etiqueta = yo ? ""
+    : `<span class="lbl ${anclaje}" style="left:${x}%;top:${y}%">${nombreDe(id)}</span>`;
   return `<span class="${clase}" style="left:${x}%;top:${y}%"></span>${etiqueta}`;
 }
 

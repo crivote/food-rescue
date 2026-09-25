@@ -64,12 +64,12 @@ export function lugarCompleto(id) {
  * La ruta del turno sube de sur a norte, asi que se ordena en vertical.
  */
 export const PLANO_POS = {
-  r32: { x: 34, y: 88 },
-  r15: { x: 30, y: 74 },
-  r27: { x: 36, y: 66 },
-  r24: { x: 44, y: 24 },
-  c5:  { x: 58, y: 82 },
-  c3:  { x: 62, y: 16 },
+  r32: { x: 20, y: 88 },
+  c5:  { x: 72, y: 72 },
+  r15: { x: 24, y: 56 },
+  r27: { x: 34, y: 40 },
+  r24: { x: 56, y: 24 },
+  c3:  { x: 28, y: 10 },
 };
 
 /** Posicion en % de un punto; si falta, se centra (nunca un id). */

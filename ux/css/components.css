@@ -509,11 +509,32 @@
       box-shadow: 0 0 0 3px #26332c22
     }
 
+    /* Los rotulos van sobre el plano, que tiene tonos claros y texturas:
+       con solo color de texto se pierden. Se les da una pastilla clara
+       (como los mapas de verdad) para garantizar el contraste. */
     .map .lbl {
       position: absolute;
       font-size: 9.5px;
-      color: var(--ink-soft);
-      font-weight: 700
+      color: var(--ink);
+      font-weight: 700;
+      background: rgba(255, 255, 255, .88);
+      border: 1px solid rgba(31, 122, 77, .18);
+      border-radius: 6px;
+      padding: 2px 5px;
+      box-shadow: 0 1px 3px rgba(31, 60, 40, .10);
+      white-space: nowrap;
+      /* se centra verticalmente en el punto */
+      transform: translateY(-50%)
+    }
+
+    /* El rotulo se ancla al lado que le deja sitio: los puntos de la mitad
+       derecha lo llevan hacia la izquierda, o se saldrian del recuadro. */
+    .map .lbl--der {
+      transform: translate(8px, -50%)
+    }
+
+    .map .lbl--izq {
+      transform: translate(calc(-100% - 8px), -50%)
     }
 
     .chip {
