@@ -34,9 +34,11 @@ Es la pregunta importante, así que va primero y sin rodeos.
   nombre inventado.
 - **El nombre de la voluntaria**: *Juana España*, siguiendo la convención de los
   documentos de identidad de muestra.
-- **El plano del trayecto**: es una **ilustración**, no una proyección del escenario.
-  Las chinchetas están colocadas de forma verosímil para que se entienda el recorrido,
-  pero **no corresponden a las coordenadas reales** de los puntos.
+- **El plano del trayecto**: es una **ilustración generada**, no una proyección del
+  escenario. Las chinchetas están colocadas de forma verosímil para que se entienda el
+  recorrido, pero **no corresponden a las coordenadas reales** de los puntos. Se eligió
+  la variante sin ningún texto incrustado, para que los rótulos de la interfaz sean los
+  únicos que se leen (y se puedan cambiar sin rehacer la imagen).
 
 ### Por qué esta separación
 
