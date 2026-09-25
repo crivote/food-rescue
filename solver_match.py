@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ── MATCHER BASE (REFERENCIA, no es la entrega) ────────────────────────
+# Matching comidas/minuto sin heurísticas. Solo sirve de línea base (53.2%).
 """
 Solver online v2 — matching óptimo por ronda (min-cost flow).
 

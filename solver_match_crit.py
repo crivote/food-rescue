@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# ── SOLVER DETERMINISTA (BACKUP del principal) ─────────────────────────
+# Motor de reglas stdlib. NO es la entrega: actúa como base y salvaguarda
+# del solucionador principal (ml/solver_scorer.py). Solo, da 55.4%.
 """
 Solver online — matcher por ronda con prioridad de CRITICIDAD (exclusividad),
 bono de DESIERTO (recogidas lejanas) y malus de CERCANÍA (recogidas pegadas

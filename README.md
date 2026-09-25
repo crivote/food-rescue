@@ -1,5 +1,18 @@
 # NextFood — Reto "¿Cuánta comida puedes salvar?"
 
+> **▶ Ejecutar la entrega (una línea).** El solucionador de la entrega vive en
+> `ml/solver_scorer.py` y tiene un punto de entrada en el raíz, `solve.py`:
+>
+> ```bash
+> pip install lightgbm
+> python3 ai-for-good-72h-harness/comida/simulate.py \
+>     --scenario ai-for-good-72h-harness/comida/scenarios/sample_01.json \
+>     --solver solve.py
+> ```
+>
+> Devuelve **58.5%** (453 raciones) en el escenario publicado. Es el único
+> comando que reproduce la cifra de entrega.
+
 <img src="ux/assets/icono-512.png" width="88" alt="NextFood" align="right">
 
 **NextFood** es nuestra solución para el reto **AI for Action**
@@ -301,7 +314,7 @@ imágenes generadas, no fotografías reales.
 | `optimo_exacto.py` (techo de referencia) | `ortools` | Solo si quieres re-ejecutar el solver exacto. |
 | `ml/etiquetar_cpsat.py` + `ml/entrenar_variantes.py` (re-generar scorer) | `ortools` + `lightgbm` + `numpy` | Solo si corres `ml/build_scorer.sh`. |
 
-Para ejecutar la entrega completa: `pip install lightgbm` y luego `python3 ml/solver_scorer.py`. Si además quieres el motor determinista sin instalar nada, `python3 solver_match_crit.py` corre con la biblioteca estándar.
+Para ejecutar la entrega completa: `pip install lightgbm` y luego el comando de la sección *Ejecución* (`--solver solve.py`). Si además quieres el motor determinista sin instalar nada, usa `--solver solver_match_crit.py`, que corre con la biblioteca estándar.
 
 ## Ejecución
 
@@ -313,7 +326,7 @@ estándar.
 # el solucionador de la entrega: scorer + guardrail (necesita lightgbm)
 python3 ai-for-good-72h-harness/comida/simulate.py \
     --scenario ai-for-good-72h-harness/comida/scenarios/sample_01.json \
-    --solver ml/solver_scorer.py
+    --solver solve.py
 ```
 
 Devuelve **58.5%** en el escenario publicado:
@@ -344,8 +357,9 @@ casos difíciles, no en la media).
 ## Estructura
 
 ```
+solve.py                         ← ENTRADA A LA ENTREGA: reexporta ml/solver_scorer.py (58.5%)
 ml/solver_scorer.py             ← LA ENTREGA: scorer + guardrail (58.5% en sample_01)
-solver_match_crit.py            ← motor determinista (solo stdlib, 55.4%)
+solver_match_crit.py            ← motor determinista (solo stdlib, 55.4%; backup/guardrail)
 solver_match.py                 ← matcher base (referencia sin heurísticas, 53.2%)
 docs/METODOLOGIA.md             ← validación completa: metodología y evidencia
 docs/AI_METHODS.md              ← método de IA: scorer por imitación (técnico)

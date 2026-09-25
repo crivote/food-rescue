@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# ── SOLVER PRINCIPAL (LA ENTREGA) ──────────────────────────────────────
+# Scorer LightGBM + guardrail cap-30. ES EL SOLUCIONADOR QUE SE PUNTÚA.
+# Ejecutar éste (o solve.py, que lo reexporta); devuelve 58.5% en sample_01.
 """
 Solver online con scorer aprendido (LightGBM) en lugar del peso artesanal.
 
