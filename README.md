@@ -4,7 +4,7 @@
 > `ml/solver_scorer.py` y tiene un punto de entrada en el raíz, `solve.py`:
 >
 > ```bash
-> pip install lightgbm
+> pip install -r requirements.txt
 > python3 ai-for-good-72h-harness/comida/simulate.py \
 >     --scenario ai-for-good-72h-harness/comida/scenarios/sample_01.json \
 >     --solver solve.py
@@ -314,13 +314,13 @@ imágenes generadas, no fotografías reales.
 | `optimo_exacto.py` (techo de referencia) | `ortools` | Solo si quieres re-ejecutar el solver exacto. |
 | `ml/etiquetar_cpsat.py` + `ml/entrenar_variantes.py` (re-generar scorer) | `ortools` + `lightgbm` + `numpy` | Solo si corres `ml/build_scorer.sh`. |
 
-Para ejecutar la entrega completa: `pip install lightgbm` y luego el comando de la sección *Ejecución* (`--solver solve.py`). Si además quieres el motor determinista sin instalar nada, usa `--solver solver_match_crit.py`, que corre con la biblioteca estándar.
+Para ejecutar la entrega completa: `pip install -r requirements.txt` (instala `lightgbm`, la única dependencia de la entrega; `ortools`/`numpy` solo son necesarios para re-entrenar el scorer o re-ejecutar el solver exacto). Si además quieres el motor determinista sin instalar nada, usa `--solver solver_match_crit.py`, que corre con la biblioteca estándar.
 
 ## Ejecución
 
 Requisitos: Python 3.10+. El solucionador integrado (la entrega) necesita
-`lightgbm`; el motor determinista y las referencias funcionan con la biblioteca
-estándar.
+`lightgbm`; instálalo con `pip install -r requirements.txt`. El motor
+determinista y las referencias funcionan con la biblioteca estándar.
 
 ```bash
 # el solucionador de la entrega: scorer + guardrail (necesita lightgbm)
@@ -358,6 +358,7 @@ casos difíciles, no en la media).
 
 ```
 solve.py                         ← ENTRADA A LA ENTREGA: reexporta ml/solver_scorer.py (58.5%)
+requirements.txt                ← dependencias (lightgbm; ortools/numpy opcionales)
 ml/solver_scorer.py             ← LA ENTREGA: scorer + guardrail (58.5% en sample_01)
 solver_match_crit.py            ← motor determinista (solo stdlib, 55.4%; backup/guardrail)
 solver_match.py                 ← matcher base (referencia sin heurísticas, 53.2%)

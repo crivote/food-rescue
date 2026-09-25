@@ -1,0 +1,16 @@
+# ── NextFood — dependencias ─────────────────────────────────────────────
+# Instalación para ejecutar LA ENTREGA (solve.py → ml/solver_scorer.py):
+#
+#     pip install -r requirements.txt
+#
+# El motor determinista (solver_match_crit.py) y las referencias
+# (solver_match.py, baseline_greedy) NO necesitan nada: solo biblioteca
+# estándar de Python.
+
+# ── La entrega (scorer + guardrail) ─────────────────────────────────────
+lightgbm==4.7.0
+
+# ── Opcional: regenerar el scorer / re-ejecutar el solver exacto ────────
+# Solo si corres `bash ml/build_scorer.sh` o `optimo_exacto.py`:
+ortools==9.15.6755
+numpy==2.4.6
