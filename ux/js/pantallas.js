@@ -11,7 +11,7 @@
    sabe nada del sistema.
    ============================================================ */
 
-import { nombreDe, direccionDe } from "./nombres.js";
+import { nombreDe, direccionDe, fotoDe } from "./nombres.js";
 import { hhmm } from "./tiempo.js";
 import { planoHTML, trayectoHTML } from "./mapa.js";
 import { puntosPor } from "./gamificacion.js";
@@ -33,6 +33,20 @@ function legItem(icono, etiqueta, id) {
         <p class="vl">${nombreDe(id)}${dir ? " <br> " + dir : ""}</p>
       </span>
     </div>`;
+}
+
+/**
+ * Foto del local para reconocerlo al llegar. Si el local aun no tiene
+ * foto propia, no se pinta nada: mejor hueco ausente que imagen rota.
+ */
+function fotoLocal(id) {
+  const src = fotoDe(id);
+  if (!src) return "";
+  return `
+    <figure class="foto">
+      <img src="${src}" alt="${nombreDe(id)}" width="640" height="640" loading="lazy" decoding="async">
+      <figcaption class="foto__cap">Así reconocerás el local</figcaption>
+    </figure>`;
 }
 
 /** Stepper de 4 pasos de la mision. `activo` = 1..4. */
@@ -137,6 +151,7 @@ export function pantallaRecogida(est) {
         <svg style="width:18px;height:18px;stroke:var(--solid);fill:none;stroke-width:1.8"><use href="#i-pin"/></svg>
         ${nombreDe(m.recogida)}<br>${direccionDe(m.recogida)}
       </p>
+      ${fotoLocal(m.recogida)}
       <p>Confirma cuántas raciones cargas realmente:</p>
       <div class="card load">
         <span class="eyebrow">Carga confirmada</span>

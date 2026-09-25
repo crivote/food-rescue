@@ -39,6 +39,11 @@ Es la pregunta importante, así que va primero y sin rodeos.
   recorrido, pero **no corresponden a las coordenadas reales** de los puntos. Se eligió
   la variante sin ningún texto incrustado, para que los rótulos de la interfaz sean los
   únicos que se leen (y se puedan cambiar sin rehacer la imagen).
+- **Las fotos de los locales**: son **imágenes generadas**, no fotografías de los
+  comercios reales (que no existen: los puntos del escenario son simulados). Hacen la
+  función de «así reconocerás el sitio al llegar». El nombre del fichero es el del
+  **local inventado**, nunca el identificador del escenario, para que el repositorio
+  público no revele la nomenclatura interna.
 
 ### Por qué esta separación
 
@@ -89,7 +94,12 @@ ux/
     tiempo.js          minutos del escenario -> horas de reloj
     gamificacion.js    puntos, niveles, objetivos
   data/turno.json      la traza real (generada, no escrita a mano)
-  assets/              logo y plano
+  assets/              logo, plano y fotos de los locales
+
+Las fotos se sirven a 640x640 webp (~27 KB cada una) y se recortan a 132 px
+de alto desde el CSS. Solo las tienen los locales cuya foto existe: el resto
+muestra la tarjeta sin imagen, porque un hueco ausente es mejor que una
+imagen rota.
   build_turno.py       regenera data/turno.json desde el motor
 ```
 

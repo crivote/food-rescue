@@ -537,6 +537,52 @@
       transform: translate(calc(-100% - 8px), -50%)
     }
 
+    /* --- foto del local ---------------------------------------------
+       Sirve para RECONOCER el sitio al llegar, no para decorar: por eso
+       va en la pantalla de llegada y no en la de camino (que ya lleva
+       el plano). La banda inferior oscurece el pie de la foto para que
+       el texto se lea sobre cualquier imagen.
+       ---------------------------------------------------------------- */
+    .foto {
+      position: relative;
+      margin-top: 12px;
+      border: 1.3px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #eef3ee;
+      line-height: 0
+    }
+
+    .foto img {
+      display: block;
+      width: 100%;
+      /* 132px: la pantalla de llegada ya venia justa de alto, y la foto
+         tiene que caber sin empujar el boton de confirmar fuera de vista */
+      height: 132px;
+      object-fit: cover;
+      /* tinte calido suave: una foto a color cruda sobre una interfaz de
+         tonos crema parece un parche. Sepia minimo + saturacion algo baja
+         la asienta en la paleta sin volverla irreal. */
+      filter: saturate(.88) sepia(.1) contrast(1.03)
+    }
+
+    .foto__cap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 26px 11px 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .1px;
+      line-height: 1.2;
+      color: #fff;
+      /* sombra ademas del degradado: la foto tiene zonas claras (pilas de
+         pan, estanterias) y el degradado solo no garantiza el contraste */
+      text-shadow: 0 1px 3px rgba(12, 20, 15, .8);
+      background: linear-gradient(to top, rgba(15, 24, 18, .82), rgba(15, 24, 18, .34) 55%, rgba(15, 24, 18, 0))
+    }
+
     .chip {
       position: absolute;
       top: 9px;

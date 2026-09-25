@@ -10,10 +10,14 @@
    descripcion generica LEGIBLE, jamas el id crudo.
    ============================================================ */
 
-/* Comercios que recogen comida. Nombres y direcciones ficticios. */
+/* Comercios que recogen comida. Nombres, direcciones y fotos ficticios.
+   La foto se llama por el nombre del local, NUNCA por su id: asi el
+   repositorio publico no revela la nomenclatura del escenario. */
 const COMERCIOS = {
-  r32: { nombre: "Supermercado El Huerto",   direccion: "Calle del Almendro 12" },
-  r15: { nombre: "Panadería La Espiga",      direccion: "Calle del Molino 8" },
+  r32: { nombre: "Supermercado El Huerto",   direccion: "Calle del Almendro 12",
+         foto: "supermercado-huerto" },
+  r15: { nombre: "Panadería La Espiga",      direccion: "Calle del Molino 8",
+         foto: "panaderia-espiga" },
   r27: { nombre: "Frutería El Vergel",       direccion: "Avenida de los Olivos 45" },
   r24: { nombre: "Restaurante La Mesa",      direccion: "Calle de la Fuente 3" },
   r25: { nombre: "Mercado de la Ribera",     direccion: "Paseo del Río 30" },
@@ -49,6 +53,16 @@ export function nombreDe(id) {
 export function direccionDe(id) {
   const e = NOMBRES[id];
   return e ? e.direccion : "";
+}
+
+/**
+ * Ruta de la foto del local, o cadena vacia si aun no hay ninguna.
+ * Devolver vacio es importante: quien la use decide que hacer sin foto
+ * en vez de recibir una imagen rota.
+ */
+export function fotoDe(id) {
+  const e = NOMBRES[id];
+  return e && e.foto ? `assets/${e.foto}.webp` : "";
 }
 
 /** "Nombre, Direccion" o solo el nombre si no hay direccion. */
