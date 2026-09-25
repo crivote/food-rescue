@@ -93,10 +93,16 @@ export function pantallaMision(est) {
   const m = est.mision;
   const n = Math.min(est.indice + 1, est.turno.misiones.length);
   const total = est.turno.misiones.length;
-  const cabe = m.raciones >= 25;
-  const motivo = cabe
-    ? "Por tu capacidad de transporte eres de las pocas personas que pueden recogerlo antes de que caduque."
-    : "Está cerca de ti y caduca pronto: puedes llegar con tiempo de sobra.";
+  /* El mensaje de asignacion lo escribe un LLM a partir del contexto de la
+     mision (build_mensajes.py) y viene en los datos. Es la palanca de
+     motivacion: habla de lo que el voluntario lleva hecho y de lo que le
+     falta. Si un turno no trae mensaje, se cae a una frase generica para
+     que la tarjeta nunca quede sin texto. */
+  const motivo = m.mensaje || (
+    m.raciones >= 25
+      ? "Por tu capacidad de transporte eres de las pocas personas que pueden recogerlo antes de que caduque."
+      : "Está cerca de ti y caduca pronto: puedes llegar con tiempo de sobra."
+  );
 
   return `
     <div class="pitch">

@@ -21,7 +21,26 @@
       "km_ida": 0.84,
       "min_ida": 4,
       "km_vuelta": 1.58,
-      "min_vuelta": 7
+      "min_vuelta": 7,
+      "mensaje": "Empieza el turno con fuerza. Si aceptas esta misión, subirás al nivel de Voluntariado.",
+      "contexto": {
+        "mision": 1,
+        "misiones_totales": 4,
+        "raciones": 18,
+        "min_para_caducar": 27,
+        "min_recorrido": 11,
+        "min_turno_lleva": 0,
+        "min_turno_queda": 120,
+        "entregas_hechas": 0,
+        "raciones_salvadas_hoy": 0,
+        "objetivo_turno": 50,
+        "raciones_para_objetivo": 50,
+        "voluntarios_capaces": 2,
+        "sube_de_nivel": true,
+        "nivel_actual": "Colaboración",
+        "nivel_siguiente": "Voluntariado",
+        "cumple_objetivo_con_esta": false
+      }
     },
     {
       "orden": 2,
@@ -33,7 +52,26 @@
       "km_ida": 0.76,
       "min_ida": 3,
       "km_vuelta": 0.76,
-      "min_vuelta": 3
+      "min_vuelta": 3,
+      "mensaje": "Eres la única persona que puede recoger estas 18 raciones ahora mismo. Te ayudarán mucho a acercarte a tu objetivo del turno.",
+      "contexto": {
+        "mision": 2,
+        "misiones_totales": 4,
+        "raciones": 18,
+        "min_para_caducar": 26,
+        "min_recorrido": 7,
+        "min_turno_lleva": 15,
+        "min_turno_queda": 105,
+        "entregas_hechas": 1,
+        "raciones_salvadas_hoy": 18,
+        "objetivo_turno": 50,
+        "raciones_para_objetivo": 32,
+        "voluntarios_capaces": 1,
+        "sube_de_nivel": false,
+        "nivel_actual": "Voluntariado",
+        "raciones_para_subir_nivel": 46,
+        "cumple_objetivo_con_esta": false
+      }
     },
     {
       "orden": 3,
@@ -45,7 +83,26 @@
       "km_ida": 2.69,
       "min_ida": 12,
       "km_vuelta": 2.69,
-      "min_vuelta": 12
+      "min_vuelta": 12,
+      "mensaje": "Eres la única persona que puede llegar y, con estas 18 raciones, alcanzarías el objetivo de tu turno.",
+      "contexto": {
+        "mision": 3,
+        "misiones_totales": 4,
+        "raciones": 18,
+        "min_para_caducar": 16,
+        "min_recorrido": 25,
+        "min_turno_lleva": 25,
+        "min_turno_queda": 95,
+        "entregas_hechas": 2,
+        "raciones_salvadas_hoy": 36,
+        "objetivo_turno": 50,
+        "raciones_para_objetivo": 14,
+        "voluntarios_capaces": 1,
+        "sube_de_nivel": false,
+        "nivel_actual": "Voluntariado",
+        "raciones_para_subir_nivel": 28,
+        "cumple_objetivo_con_esta": true
+      }
     },
     {
       "orden": 4,
@@ -57,7 +114,26 @@
       "km_ida": 7.68,
       "min_ida": 35,
       "km_vuelta": 7.03,
-      "min_vuelta": 32
+      "min_vuelta": 32,
+      "mensaje": "Con esta última misión subes al nivel de Rescate. Solo quedan dos personas que pueden llegar, ¿te animas?",
+      "contexto": {
+        "mision": 4,
+        "misiones_totales": 4,
+        "raciones": 20,
+        "min_para_caducar": 38,
+        "min_recorrido": 68,
+        "min_turno_lleva": 50,
+        "min_turno_queda": 70,
+        "entregas_hechas": 3,
+        "raciones_salvadas_hoy": 54,
+        "objetivo_turno": 50,
+        "raciones_para_objetivo": 0,
+        "voluntarios_capaces": 2,
+        "sube_de_nivel": true,
+        "nivel_actual": "Voluntariado",
+        "nivel_siguiente": "Rescate",
+        "objetivo_ya_cumplido": true
+      }
     }
   ]
 }

@@ -42,5 +42,11 @@ function validar(d) {
     for (const k of ["orden", "t", "recogida", "centro", "raciones"]) {
       if (m[k] === undefined) throw new Error(`mision ${m.orden ?? "?"}: falta ${k}`);
     }
+    /* El mensaje no es obligatorio: la tarjeta tiene una frase de respaldo.
+       Pero si viene, tiene que ser texto usable y no un hueco en blanco. */
+    if (m.mensaje !== undefined
+        && (typeof m.mensaje !== "string" || !m.mensaje.trim())) {
+      throw new Error(`mision ${m.orden ?? "?"}: mensaje vacio o no es texto`);
+    }
   }
 }

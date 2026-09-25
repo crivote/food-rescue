@@ -155,6 +155,17 @@ Estas son las que costaron una vuelta, y por qué quedaron así:
 - **El plano es ilustrativo, los números no.** El fondo es una ilustración generada y las
   chinchetas están colocadas de forma verosímil, no proyectadas desde las coordenadas
   reales. Un plano realista de Madrid situaría comercios inventados en calles reales.
+- **El mensaje de la misión lo escribe un LLM, con datos del turno.** La tarjeta de
+  misión no lleva una frase fija: `build_mensajes.py` reproduce el turno tick a tick con
+  el motor real, arma un **contexto por misión** (raciones, margen de tiempo, recorrido,
+  `n_cap` real de ese tic, minutos que lleva de turno, entregas hechas, raciones salvadas,
+  objetivo del turno y los puntos que le faltan para subir de nivel) y lo traduce con
+  gemma a una frase cercana. El resultado se guarda en `data/turno.json` junto a su
+  contexto, así que la frase es **auditable**: se puede comprobar de qué datos salió.
+  `n_cap` no es una estimación: el motor lo computa al decidir (`_criticidad`) pero no lo
+  exporta, así que se recalcula con esa misma función durante el replay. Sin LLM
+  disponible cae a una plantilla determinista que usa los mismos datos; la tarjeta nunca
+  queda sin texto. El LLM **no** decide nada: el turno ya está fijado por el motor.
 - **El reloj del turno avanza paso a paso.** La hora de cada misión (`t` en los datos)
   es la de su **salida**, un valor fijo: si el panel se quedara ahí, el turno restante y
   la barra temporal solo se moverían al cerrar cada entrega. Con los minutos de cada
@@ -232,6 +243,7 @@ ux/
     tiempo.js          minutos del escenario -> horas de reloj
     gamificacion.js    puntos, niveles, objetivos
   build_turno.py       regenera data/turno.json desde el motor
+  build_mensajes.py    escribe el mensaje de cada misión (LLM + contexto)
   data/turno.json      la traza real (generada, no escrita a mano)
   assets/              marca (logo + favicon), plano y fotos de los locales
 ```

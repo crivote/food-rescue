@@ -121,6 +121,32 @@ def main():
     registro, esc, res = correr_motor(escenario)
     turno = construir(registro, esc, a.voluntario)
 
+    # Los mensajes de asignacion (y su contexto) los escribe
+    # build_mensajes.py con un LLM. Se PRESERVAN aqui para que regenerar
+    # la traza no los borre: son parte del prototipo, no de la corrida.
+    if os.path.exists(SALIDA):
+        try:
+            with open(SALIDA, encoding="utf-8") as f:
+                previo = json.load(f)
+            por_orden = {m["orden"]: m for m in previo.get("misiones", [])}
+            conservados = 0
+            for m in turno["misiones"]:
+                viejo = por_orden.get(m["orden"])
+                if not viejo:
+                    continue
+                # Solo si sigue siendo la MISMA mision (mismo punto y mismas
+                # raciones): si el turno cambia, un mensaje viejo mentiria.
+                if (viejo.get("recogida") == m["recogida"]
+                        and viejo.get("raciones") == m["raciones"]):
+                    for campo in ("mensaje", "contexto"):
+                        if campo in viejo:
+                            m[campo] = viejo[campo]
+                            conservados += 1
+            if conservados:
+                print(f"mensajes       : {conservados // 2} conservados")
+        except (OSError, json.JSONDecodeError, KeyError):
+            pass   # sin traza previa utilizable se sigue sin mensajes
+
     os.makedirs(os.path.dirname(SALIDA), exist_ok=True)
     with open(SALIDA, "w", encoding="utf-8") as f:
         json.dump(turno, f, ensure_ascii=False, indent=2)

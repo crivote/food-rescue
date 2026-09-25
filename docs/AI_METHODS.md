@@ -279,13 +279,28 @@ contexto JSON ──► prompt few-shot ──► LLM barato ──► frase nat
                                   plantilla determinista
 ```
 
-- **Contexto.** `solver_match_crit.py` expone, para cada asignación, un JSON con
-  `{raciones, capacidad_voluntario, voluntarios_capaces, min_para_caducar}` — los
-  mismos valores que entran en la fórmula del peso, sin jerga.
-- **Prompt few-shot.** `explicar_decision.py` mete ese JSON en un prompt con dos
-  ejemplos `contexto → frase`, instruyendo a no usar términos técnicos y a no
-  inventar datos. Los ejemplos enseñan a distinguir *escasez* ("eres el único")
-  de *urgencia* ("caduca en 20 min").
+- **Contexto.** El motor computa al decidir los campos que justifican la
+  asignación: raciones, capacidad del voluntario, `n_cap` (cuántos voluntarios
+  activos podían llevar esa recogida) y cuánto falta para que caduque. **Ojo: los
+  computa, no los exporta** —`_criticidad()` los usa dentro de la fórmula del peso
+  y no salen en ningún JSON—, así que quien quiera el valor real tiene que
+  recalcularlo llamando a esa misma función durante un replay del turno. El
+  prototipo (`ux/build_mensajes.py`) lo hace así, para que el contexto lleve el
+  `n_cap` verdadero del tic y no una aproximación.
+- **Contexto del prototipo: no solo la decisión, también el turno.** Una frase
+  que solo sabe de la arista suena igual en la misión 1 que en la 4. La tarjeta de
+  misión de la app usa un contexto **más rico**, porque su palanca no es explicar
+  el reparto sino **motivar**: además de las raciones, la escasez y el plazo,
+  lleva `min_recorrido`, `min_turno_lleva`, `min_turno_queda`, `entregas_hechas`,
+  `raciones_salvadas_hoy`, `objetivo_turno`, y los puntos y raciones que le faltan
+  para subir de nivel. Con eso la frase puede decir "llevas 54 raciones hoy y con
+  estas cumples el objetivo" o "con esta subes a Rescate".
+- **Prompt few-shot.** Dos ejemplos `contexto → frase`, instruyendo a no usar
+  términos técnicos, a no inventar datos y a no revelar que hay un sistema detrás.
+  Los ejemplos enseñan a distinguir *escasez* ("eres el único") de *urgencia*
+  ("caduca en 20 min"). `explicar_decision.py` traduce una decisión suelta;
+  `ux/build_mensajes.py` recorre el itinerario entero y escribe la frase de cada
+  misión en `data/turno.json`, junto a su contexto, para que sea auditable.
 - **Modelo.** Un LLM ligero a través de un endpoint OpenAI-compatible
   (configurado por variables de entorno `LLM_ENDPOINT` / `LLM_MODEL` /
   `LLM_API_KEY`; ninguna credencial ni nombre de proveedor va en el código). Una
@@ -293,7 +308,8 @@ contexto JSON ──► prompt few-shot ──► LLM barato ──► frase nat
 - **Fallback determinista.** Si no hay red o clave, devuelve una plantilla
   equivalente (nunca deja de responder), marcando el aviso en `stderr`.
 
-**Salida real verificada** (dos casos, LLM ligero OpenAI-compatible):
+**Salida real verificada** (dos casos de decisión suelta, LLM ligero
+OpenAI-compatible):
 
 | Contexto | Frase generada |
 |---|---|
@@ -302,6 +318,22 @@ contexto JSON ──► prompt few-shot ──► LLM barato ──► frase nat
 
 El segundo caso demuestra generalización (no repetición del ejemplo): ante tres
 voluntarios capaces el modelo explica por *urgencia* en lugar de por *escasez*.
+
+**Salida real del itinerario del prototipo** (`ux/build_mensajes.py`, gemma sobre
+la traza real de `v05` en `sample_01`). Las cuatro frases son distintas y cada una
+usa un dato distinto del turno —no se repite la plantilla—:
+
+| Misión | Contexto del tic | Frase generada |
+|---|---|---|
+| r32 · 18 rac | 1.ª del turno · 2 capaces · 27 min de plazo · **sube a Voluntariado** | «Empieza el turno con fuerza. Si aceptas esta misión, subirás al nivel de Voluntariado.» |
+| r15 · 18 rac | 18 ya salvadas · **1 capaz** · 26 min | «Eres la única persona que puede recoger estas 18 raciones ahora mismo. Te ayudarán mucho a acercarte a tu objetivo del turno.» |
+| r27 · 18 rac | 36 ya salvadas · 1 capaz · **cumple el objetivo** | «Eres la única persona que puede llegar y, con estas 18 raciones, alcanzarías el objetivo de tu turno.» |
+| r24 · 20 rac | 54 ya salvadas · 2 capaces · **sube a Rescate** | «Con esta última misión subes al nivel de Rescate. Solo quedan dos personas que pueden llegar, ¿te animas?» |
+
+La cuarta frase no habría sido posible con el contexto de la decisión suelta: para
+decir "con esta última misión subes a Rescate" hace falta saber que es la última,
+cuánto lleva acumulado y en qué nivel está. Ese es el motivo de enriquecer el
+contexto con el progreso del turno.
 
 Se descarta SHAP como núcleo de la propuesta; queda registrada como opción
 explorada, con la razón de su descarte. La explicabilidad real de cara al

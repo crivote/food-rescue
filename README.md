@@ -378,6 +378,7 @@ ux/                             ← prototipo de app del voluntario (web estáti
     css/                        ← tokens, layout y componentes
     data/turno.json             ← la traza REAL del motor (generada, no escrita a mano)
     build_turno.py              ← regenera data/turno.json desde el motor
+    build_mensajes.py           ← escribe el mensaje de cada misión (LLM + contexto del turno)
     assets/                     ← marca (logo + favicon), plano y fotos de los locales
 ```
 
@@ -423,9 +424,18 @@ internos. `ux/README.md` separa explícitamente lo real de lo ficticio.
 
 Sobre la explicación de por qué se asignó cada recogida: `explicar_decision.py` traduce
 el contexto de decisión del motor a lenguaje natural con un LLM barato (mecanismo
-descrito en [`docs/AI_METHODS.md`](docs/AI_METHODS.md), §9). En la app publicada esa
-frase se resuelve con una plantilla del propio motor, sin llamada a ningún servicio: la
-interfaz es un prototipo de interacción y no está conectada a nada externo.
+descrito en [`docs/AI_METHODS.md`](docs/AI_METHODS.md), §9).
+
+Ese mismo mecanismo, aplicado al itinerario completo, es el que escribe el **mensaje de
+asignación** que ve el voluntario en cada misión: `ux/build_mensajes.py` reproduce el
+turno tick a tick con el motor real, arma un contexto por misión (raciones, margen de
+tiempo, recorrido, cuántos voluntarios podían llegar, lo que lleva salvado, lo que le
+falta para el objetivo y para subir de nivel) y lo traduce a una frase cercana. El
+resultado se guarda en `ux/data/turno.json` junto a su contexto, así que cualquier frase
+se puede auditar contra los datos de los que salió. **La app publicada no llama a ningún
+servicio en tiempo de ejecución**: las frases se generaron al construir el prototipo y
+viajan dentro del JSON, igual que el plano o las fotos. Sin LLM disponible el script cae
+a una plantilla determinista que usa los mismos datos.
 
 ## Licencia
 
