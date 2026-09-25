@@ -1,12 +1,16 @@
-# La app del voluntariado — propuesta de interfaz
+# La app del voluntariado de NextFood — propuesta de interfaz
 
-Prototipo de la interfaz que vería una persona voluntaria de **food-rescue** durante
+Prototipo de la interfaz que vería una persona voluntaria de **NextFood** durante
 un turno de recogida y entrega de comida. Se publica como web estática:
 
 **https://crivote.github.io/food-rescue/ux/**
 
 - `?modo=lamina` — las seis pantallas en fila (vista de diseño)
 - sin parámetro — la app navegable, con el recorrido completo
+
+La marca (**NextFood**, hoja que se vuelve cesta) es una propuesta de nombre para el
+producto; el repositorio conserva el nombre del reto (`food-rescue`). El logotipo vive
+en `assets/logo_trans.png` y su favicon (`assets/favicon.ico`) se deriva del icono.
 
 ---
 
@@ -211,7 +215,7 @@ ux/
     gamificacion.js    puntos, niveles, objetivos
   build_turno.py       regenera data/turno.json desde el motor
   data/turno.json      la traza real (generada, no escrita a mano)
-  assets/              logo, plano y fotos de los locales
+  assets/              marca (logo + favicon), plano y fotos de los locales
 ```
 
 Las fotos se sirven a 640 px de ancho en webp (27-65 KB cada una) y el CSS las recorta a

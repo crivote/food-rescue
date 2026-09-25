@@ -33,7 +33,7 @@ export function cabecera(est) {
     : inicial;
   return `
   <header class="head">
-    <span><img src="assets/logo_trans.png" width="70" alt="nextfood"></span>
+    <span><img src="assets/logo_trans.png" width="70" alt="NextFood"></span>
     <span class="spacer"></span>
     <span class="ava">${retrato}</span>
     <div class="kebab">

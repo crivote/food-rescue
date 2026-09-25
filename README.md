@@ -1,8 +1,12 @@
-# Food Rescue — Reto "¿Cuánta comida puedes salvar?"
+# NextFood — Reto "¿Cuánta comida puedes salvar?"
 
-Solución para el reto **AI for Action** (<https://aiforaction.tech/comida>): asignar
-comida perecedera de supermercados a bancos de alimentos en una tarde, contra un
-simulador de eventos discretos.
+<img src="ux/assets/icono-512.png" width="88" alt="NextFood" align="right">
+
+**NextFood** es nuestra solución para el reto **AI for Action**
+(<https://aiforaction.tech/comida>): asignar comida perecedera de supermercados a
+bancos de alimentos en una tarde, contra un simulador de eventos discretos. El
+nombre y el logotipo (hoja que se vuelve cesta) son la marca que le dimos al
+producto; el repositorio se llama `food-rescue` por el reto, no por la marca.
 
 La entrega es un **solucionador unificado** (`ml/solver_scorer.py`): una capa de IA
 **integrada** (aprendizaje por imitación) que combina un modelo de puntuación
@@ -237,6 +241,56 @@ El detalle técnico está en [`docs/AI_METHODS.md`](docs/AI_METHODS.md) y
 > features, validar reproducibilidad), ejecuta `bash ml/build_scorer.sh`
 > (~4 h en CPU 16 cores, ~2 h en 4 cores; necesita además `ortools`).
 
+## Cómo lo construimos — herramientas y equipos
+
+Esta sección declara el *tooling*, no el método. Ninguna de estas herramientas
+toma decisiones en tiempo de ejecución: **el solucionador que se puntúa es
+determinista y no llama a ningún servicio externo** (verificado: `decidir(estado)`
+solo usa la biblioteca estándar y el modelo versionado). Las llamadas que se
+cuentan abajo son del **proceso de construcción** — exploración, código,
+documentación y las ilustraciones del prototipo.
+
+**Agente de IA.** El desarrollo se llevó con **[Hermes
+Agent](https://hermes-agent.nousresearch.com/)** (Nous Research) como orquestador,
+con enrutado de modelos por tarea sobre Ollama Cloud y OpenRouter. Consumo de la
+cuenta durante la semana de construcción (panel del proveedor; Ollama no desglosa
+por proyecto, así que son cifras de la cuenta, no solo de este reto):
+
+| Modelo | Llamadas | Para qué se usó aquí |
+|---|---|---|
+| `deepseek-v4.1-flash` | **2104** | volumen: edición de código, benchmarks, docs |
+| `deepseek-v4-pro:0813` | **1475** | razonamiento: diseño de features, depuración fina |
+| `gemma4:31b` | **704** | respuestas rápidas, comprobaciones cortas |
+| `minimax-m3` | 84 | análisis de casos límite |
+| `glm-5.3` | 47 | tareas puntuales |
+
+En total, **~4400 llamadas** en la ventana del reto. El reparto de modelos es el
+del enrutado por dificultad: el modelo barato para el volumen y el de
+razonamiento para las decisiones de diseño.
+
+**Generación de imágenes.** **ComfyUI** local con **FLUX.2 klein** para las
+ilustraciones del prototipo; el logotipo de la marca y el plano se generaron con
+**Qwen 3.8** en su chat web. Las seis fotos de locales de `ux/assets/` son
+imágenes generadas, no fotografías reales.
+
+**Equipos.**
+
+- **Mini-PC Intel N100** (4 núcleos, 16 GB, sin GPU) — Linux: aquí vive el agente
+  Hermes y aquí corrieron la orquestación y los benchmarks secuenciales. Es el
+  setting correcto para medir: se comprobó que paralelizar los *predicts* de
+  LightGBM por semilla en más núcleos daba resultados **peores** que la ejecución
+  secuencial (el booster ya usa sus propios hilos internos), así que los
+  benchmarks finales se corrieron aquí a propósito.
+- **ASUS TUF Gaming FA506IV** (AMD Ryzen 7, 16 GB, **RTX 2060 mobile** 6 GB) —
+  Windows/Linux: aquí corrieron **ComfyUI** (las ilustraciones) y el **batch
+  pesado de 600 semillas** del etiquetado CP-SAT, por tener más núcleos que el
+  N100.
+
+> **Qué no usamos.** Ningún servicio de IA en el bucle de decisión, ninguna API
+> en tiempo real y ningún dato real de personas u organizaciones. El solver que
+> se puntúa corre con `lightgbm` (o solo la biblioteca estándar, en el caso del
+> motor) y nada más.
+
 ## Requisitos e instalación
 
 | Componente | Dependencias | Notas |
@@ -325,10 +379,15 @@ ux/                             ← prototipo de app del voluntario (web estáti
     css/                        ← tokens, layout y componentes
     data/turno.json             ← la traza REAL del motor (generada, no escrita a mano)
     build_turno.py              ← regenera data/turno.json desde el motor
-    assets/                     ← logo, plano y fotos de los locales
+    assets/                     ← marca (logo + favicon), plano y fotos de los locales
 ```
 
-## Visión de producto — del simulador al sistema real
+## Visión de producto — NextFood, del simulador al sistema real
+
+**NextFood** es el nombre del producto: el sistema completo que este repositorio
+implementa solo en su núcleo de decisión. La marca (hoja que se vuelve cesta)
+resume la idea —del excedente vegetal a la cesta de quien lo necesita— y la app
+del voluntariado de [`ux/`](ux/) es su primera cara visible.
 
 Este repositorio es el **motor de decisión**, no el sistema completo. El paso a
 producción pasa por una pieza que hoy no existe y que habría que diseñar: una
@@ -377,4 +436,6 @@ El motor y los scripts de validación de este repositorio están bajo la licenci
 (ver `ai-for-good-72h-harness/LICENSE`).
 
 Las imágenes de `ux/assets/` son **ilustraciones generadas** para el prototipo (no
-fotografías de locales reales, que no existen porque el escenario es simulado).
+fotografías de locales reales, que no existen porque el escenario es simulado):
+las generó **ComfyUI con FLUX.2 klein** en local, salvo la marca y el plano, que
+salieron de **Qwen 3.8** en su chat web.
