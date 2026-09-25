@@ -11,8 +11,11 @@ dimensiones coinciden exactamente con las del entrenamiento (entrenar_variantes.
 Si cambias scorer_features.FEATURE_KEYS, reentrena el modelo para que el
 predict no falle por desajuste de columnas.
 
-El modelo se carga una vez (ruta en SCORER_MODEL o argumento). Si el modelo no
-está disponible, devuelve [] (fallback: el orquestador usa el motor miope).
+El modelo se carga una vez (ruta resuelta respecto a la raíz del repo, o vía
+SCORER_MODEL / argumento). Si el modelo no está disponible, se AVISA por stderr
+y decidir() devuelve [] (el orquestador usa entonces el motor determinista): sin
+ese aviso, quien mide creería estar obteniendo las cifras del integrado cuando en
+realidad son las del motor determinista.
 
 Uso (como módulo):
     from solver_scorer import decidir
@@ -94,12 +97,26 @@ def cargar_modelo(ruta=None):
         return _modelo
     # Prioridad de ruta: argumento explícito → variable de entorno → default.
     # El default apunta al modelo VERSIONADO en el repo (models/scorer_full.txt,
-    # 2.7 MB, ~4h de regenerar). Si no existe, decidir() devuelve [] (fallback
-    # silencioso al motor miope); el orquestador debe comprobar la disponibilidad
-    # del modelo antes de invocar este solver.
-    ruta = ruta or os.environ.get("SCORER_MODEL") or "models/scorer_full.txt"
+    # 2.7 MB, ~4h de regenerar), resuelto de forma ABSOLUTA respecto a la raíz
+    # del repo (RAIZ), nunca respecto al cwd: si no, ejecutar el solver desde
+    # otro directorio no encuentra el modelo y cae al motor sin avisar.
+    if ruta:
+        ruta = os.path.abspath(ruta)
+    elif os.environ.get("SCORER_MODEL"):
+        ruta = os.path.abspath(os.environ["SCORER_MODEL"])
+    else:
+        ruta = os.path.join(RAIZ, "models", "scorer_full.txt")
     import lightgbm as lgb
-    _modelo = lgb.Booster(model_file=ruta)
+    try:
+        _modelo = lgb.Booster(model_file=ruta)
+    except Exception as exc:
+        # NO tragarse el error: sin modelo, decidir() devolvería el motor
+        # determinista y el evaluador creería estar midiendo el integrado.
+        print("[solver_scorer] AVISO: no se pudo cargar el modelo en %r (%s). "
+              "El scorer cae al motor determinista, asi que las cifras seran "
+              "las del motor, NO las del solucionador integrado." % (ruta, exc),
+              file=sys.stderr)
+        raise
     _modelo_path = ruta
     return _modelo
 
