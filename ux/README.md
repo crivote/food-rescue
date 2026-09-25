@@ -52,14 +52,15 @@ Es la pregunta importante, así que va primero y sin rodeos.
 
 ### Qué punto tiene foto y cuál no
 
-Hay foto de **los 4 puntos de recogida** (supermercado, panadería, frutería,
-restaurante) y **de ninguno de los dos destinos**. Los comercios son sitios a los que el
-voluntario llega y tiene que reconocer de un vistazo; los destinos ya se identifican por
-su nombre y su dirección.
+Hay foto de **los 6 puntos**: los 4 comercios de recogida (supermercado, panadería,
+frutería, restaurante) y los 2 centros de entrega (comedor y banco de alimentos). La
+foto aparece en la pantalla de llegada, que es donde el voluntario necesita confirmar
+que está en el sitio correcto, y el pie cambia según el momento: *"Así reconocerás el
+local"* al recoger, *"Así reconocerás el punto de entrega"* al entregar.
 
 Cuando un punto no tiene foto **no se pinta nada**: un hueco ausente es mejor que una
-imagen rota o una de relleno. Añadir la foto del comedor y del banco de alimentos es
-solo dejar el fichero en `assets/` y nombrarlo en el diccionario.
+imagen rota o una de relleno. Añadir una foto es solo dejar el fichero en `assets/` y
+nombrarlo en el diccionario.
 
 ### Por qué esta separación
 
@@ -112,7 +113,7 @@ ux/
   data/turno.json      la traza real (generada, no escrita a mano)
   assets/              logo, plano y fotos de los locales
 
-Las fotos se sirven a 640x640 webp (~27 KB cada una) y se recortan a 132 px
+Las fotos se sirven a 640 px de ancho en webp (27-65 KB cada una) y se recortan a 132 px
 de alto desde el CSS. Solo las tienen los locales cuya foto existe: el resto
 muestra la tarjeta sin imagen, porque un hueco ausente es mejor que una
 imagen rota.

@@ -11,7 +11,7 @@
    sabe nada del sistema.
    ============================================================ */
 
-import { nombreDe, direccionDe, fotoDe } from "./nombres.js";
+import { nombreDe, direccionDe, fotoDe, esCentro } from "./nombres.js";
 import { hhmm } from "./tiempo.js";
 import { planoHTML, trayectoHTML } from "./mapa.js";
 import { puntosPor } from "./gamificacion.js";
@@ -42,10 +42,13 @@ function legItem(icono, etiqueta, id) {
 function fotoLocal(id) {
   const src = fotoDe(id);
   if (!src) return "";
+  /* Al recoger se reconoce un comercio; al entregar, un centro. El pie
+     lo dice con las palabras de cada momento. */
+  const pie = esCentro(id) ? "Así reconocerás el punto de entrega" : "Así reconocerás el local";
   return `
     <figure class="foto">
       <img src="${src}" alt="${nombreDe(id)}" width="640" height="640" loading="lazy" decoding="async">
-      <figcaption class="foto__cap">Así reconocerás el local</figcaption>
+      <figcaption class="foto__cap">${pie}</figcaption>
     </figure>`;
 }
 

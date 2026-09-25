@@ -28,10 +28,12 @@ const COMERCIOS = {
 
 /* Centros donde se entrega la comida. Nombres ficticios. */
 const CENTROS = {
-  c5: { nombre: "Comedor La Concordia",  direccion: "Calle de la Concordia 21" },
+  c5: { nombre: "Comedor La Concordia",  direccion: "Calle de la Concordia 21",
+        foto: "comedor-concordia" },
   /* c3 es un CENTRO de entrega del escenario (destino con capacidad de
      almacenaje), no un comercio: el nombre tiene que sonar a destino grande. */
-  c3: { nombre: "Banco de Alimentos · Nave Norte", direccion: "Polígono Arboleda, nave 7" },
+  c3: { nombre: "Banco de Alimentos · Nave Norte", direccion: "Polígono Arboleda, nave 7",
+        foto: "banco-alimentos-nave" },
 };
 
 const NOMBRES = { ...COMERCIOS, ...CENTROS };
