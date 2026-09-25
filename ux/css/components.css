@@ -1,0 +1,1029 @@
+/* ============================================================
+   components.css — los componentes del sistema
+   (cabecera, tarjetas, pills, botones, mapa, stepper, exito,
+    panel del turno y el stepper de mision)
+   ============================================================ */
+    /* ===== status bar + header ===== */
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: none;
+      padding: 11px 4px 2px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .statusbar .sb-r {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .statusbar svg {
+      width: 15px;
+      height: 15px;
+      fill: var(--ink)
+    }
+
+    .statusbar .bat {
+      font-size: 10px;
+      font-weight: 800;
+      border: 1.4px solid var(--ink);
+      border-radius: 4px;
+      padding: 1px 3px;
+      line-height: 1
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      flex: none;
+      padding: 6px 2px 12px
+    }
+
+    .spacer {
+      flex: 1
+    }
+
+    .ava {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.6px solid var(--line);
+      background: var(--tint);
+      display: grid;
+      place-items: center;
+      flex: none;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--solid)
+    }
+
+    .kebab {
+      position: relative;
+      flex: none;
+      margin-left: 0px
+    }
+
+    .kebab>button {
+      width: 24px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 9px;
+      display: grid;
+      place-items: center
+    }
+
+    .kebab>button:hover {
+      background: #0000000a
+    }
+
+    .kebab>button>svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--ink-soft)
+    }
+
+    .menu {
+      position: absolute;
+      right: 0;
+      top: 38px;
+      width: 212px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(31, 60, 40, .18);
+      padding: 6px;
+      opacity: 0;
+      transform: translateY(-6px) scale(.98);
+      pointer-events: none;
+      transition: .16s ease;
+      z-index: 60
+    }
+
+    .kebab.open .menu {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto
+    }
+
+    .menu-head {
+      padding: 10px 12px 12px
+    }
+
+    .menu-head .nm {
+      font-size: 14.5px;
+      font-weight: 800;
+      letter-spacing: -.2px
+    }
+
+    .menu-head .rw {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 5px
+    }
+
+    .menu-head .rw b {
+      color: var(--ink);
+      font-weight: 700
+    }
+
+    .menu-head .rw .shield {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.7
+    }
+
+    .menu-head .pts {
+      font-size: 12px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 5px
+    }
+
+    .menu-head .pts b {
+      color: var(--solid);
+      font-weight: 800;
+      font-size: 13.5px
+    }
+
+    .menu hr {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 4px 10px
+    }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none
+    }
+
+    .menu a:hover {
+      background: var(--bg)
+    }
+
+    .menu a svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--ink-soft);
+      flex: none
+    }
+
+    .menu a.danger {
+      color: var(--danger)
+    }
+
+    .menu a.danger svg {
+      stroke: var(--danger)
+    }
+
+    /* ===== primitivas ===== */
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 15px
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: .13em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    h2 {
+      margin: 6px 0 3px;
+      font-size: 20px;
+      line-height: 1.15;
+      letter-spacing: -.3px
+    }
+
+    .sub {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      margin: 6px 0 0
+    }
+
+    /* card de argumento (pitch) */
+    .pitch {
+      background: var(--tint);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 18px 17px
+    }
+
+    .pitch .heart {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 10px
+    }
+
+    .pitch .heart svg {
+      width: 30px;
+      height: 30px;
+      fill: var(--heart)
+    }
+
+    .pitch h2 {
+      font-size: 24px;
+      line-height: 1.12;
+      letter-spacing: -.5px;
+      margin: 0 0 8px;
+      color: #16301f
+    }
+
+    .pitch p {
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0;
+      color: #234f37
+    }
+
+    /* lista recogida/entrega con conector */
+    .leg {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .leg-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 11px;
+      position: relative;
+      padding: 7px 0
+    }
+
+    .leg-item .ic {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      z-index: 1
+    }
+
+    .leg-item .ic svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .leg-item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 13.5px;
+      top: 33px;
+      bottom: -7px;
+      border-left: 1.6px dashed var(--line)
+    }
+
+    .leg-item .lb {
+      font-size: 10.5px;
+      letter-spacing: .06em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    .leg-item .vl {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-top: 1px;
+      line-height: 1.3
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 13px
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.3px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600
+    }
+
+    .pill svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .pill.amber {
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    .pill.amber svg {
+      stroke: var(--amber)
+    }
+
+    /* botones */
+    .acts {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .btn {
+      height: 46px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1.6px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: .15s;
+      width: 100%
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .btn.solid {
+      background: var(--solid);
+      color: #fff
+    }
+
+    .btn.solid:hover {
+      filter: brightness(1.06)
+    }
+
+    .btn.muted {
+      background: var(--muted);
+      color: var(--ink-soft);
+      border-color: transparent;
+      margin-top: 11px
+    }
+
+    .btn.muted:hover {
+      background: #e3ddd2;
+      color: var(--ink)
+    }
+
+    .cancel-link {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      padding: 9px 0 0
+    }
+
+    .cancel-link:hover {
+      color: var(--danger);
+      text-decoration: underline
+    }
+
+    /* mapa + trayecto */
+    .map {
+      position: relative;
+      height: 168px;
+      border: 1.3px solid var(--line);
+      border-radius: 16px;
+      background: #eef3ee;
+      overflow: hidden;
+      margin-top: 12px
+    }
+
+    /* --- el plano ilustrativo y su trazado ---------------------------
+       El fondo es una imagen que cubre el recuadro; las chinchetas van
+       ENCIMA, en HTML, para poder moverlas sin regenerar la imagen.
+       ----------------------------------------------------------------- */
+    .map .plano {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .92
+    }
+
+    .map .trazado {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1
+    }
+
+    .map .dot,
+    .map .mk,
+    .map .you {
+      z-index: 2
+    }
+
+    .map .lbl {
+      z-index: 3
+    }
+
+    .map .dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--line)
+    }
+
+    .map .mk {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--solid);
+      border-radius: 50%;
+      background: #fff
+    }
+
+    .map .mk::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--solid)
+    }
+
+    .map .sq {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border: 2px solid var(--amber);
+      background: #fff;
+      border-radius: 2px
+    }
+
+    .map .you {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--ink);
+      box-shadow: 0 0 0 3px #26332c22
+    }
+
+    .map .lbl {
+      position: absolute;
+      font-size: 9.5px;
+      color: var(--ink-soft);
+      font-weight: 700
+    }
+
+    .chip {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      border: 1.3px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .chip svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--ink-soft);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .trip {
+      margin-top: 12px
+    }
+
+    .trip .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: var(--line);
+      position: relative
+    }
+
+    .trip .bar i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--progress);
+      border-radius: 99px
+    }
+
+    .trip .bar .knob {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.4px solid var(--solid);
+      transform: translate(-50%, -50%)
+    }
+
+    .trip .lab {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    .trip .lab span:first-child {
+      color: var(--ink-soft)
+    }
+
+    .trip .lab b {
+      color: var(--solid)
+    }
+
+    /* stepper carga */
+    .load {
+      text-align: center;
+      border: 1px solid silver;
+      margin-top: 1em;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 8px 0 2px
+    }
+
+    .stepper button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.6px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: var(--ink)
+    }
+
+    .stepper button:hover {
+      border-color: var(--solid);
+      color: var(--solid)
+    }
+
+    .stepper button svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none
+    }
+
+    .stepper .val {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      min-width: 72px;
+      color: var(--ink)
+    }
+
+    .load .cap {
+      font-size: 12px;
+      color: var(--ink-soft)
+    }
+
+    .load .hint {
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      margin-top: 3px;
+      font-style: italic
+    }
+
+    /* éxito */
+    .halo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--tint);
+      border: 2px solid var(--tint2);
+      display: grid;
+      place-items: center;
+      margin: 4px auto 12px
+    }
+
+    .halo svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .succ .num {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px
+    }
+
+    .ach {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1.3px solid var(--line);
+      border-radius: 13px;
+      padding: 10px 11px;
+      margin-top: 9px;
+      text-align: left
+    }
+
+    .ach .ic {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.6px solid var(--amber);
+      display: grid;
+      place-items: center
+    }
+
+    .ach .ic svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--amber);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .ach t {
+      font-size: 12.5px;
+      font-weight: 700;
+      display: block
+    }
+
+    .ach s {
+      font-size: 11px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      display: block;
+      margin-top: 1px
+    }
+
+    /* ===== bottom sheet arrastrable ===== */
+    .sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      box-shadow: var(--sheet-shadow);
+      padding: 0 18px 18px;
+      z-index: 40;
+      will-change: transform;
+      transition: transform .3s cubic-bezier(.22, .61, .36, 1)
+    }
+
+    .sheet.dragging {
+      transition: none
+    }
+
+    .grip-zone {
+      cursor: grab;
+      touch-action: none;
+      padding: 9px 0 2px;
+      user-select: none;
+      -webkit-user-select: none
+    }
+
+    .grip-zone:active {
+      cursor: grabbing
+    }
+
+    .grip {
+      width: 40px;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--line);
+      margin: 0 auto 10px
+    }
+
+    .srow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .srow .sttl {
+      font-size: 10px;
+      letter-spacing: .13em;
+      font-weight: 800;
+      color: var(--ink-soft);
+      text-transform: uppercase
+    }
+
+    .srow .srem {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--solid)
+    }
+
+    .tl {
+      margin-top: 9px
+    }
+
+    .tl .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: var(--line);
+      position: relative
+    }
+
+    .tl .bar i {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--progress);
+      border-radius: 99px
+    }
+
+    .tl .bar .now {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2.4px solid var(--solid);
+      transform: translate(-50%, -50%)
+    }
+
+    .tl .lab {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--ink-soft)
+    }
+
+    .tl .lab b {
+      color: var(--ink)
+    }
+
+    .sheet-detail {
+      padding-top: 13px
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px
+    }
+
+    .stat {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1.3px solid var(--line);
+      border-radius: 13px;
+      padding: 9px 11px
+    }
+
+    .stat .ic {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: var(--tint);
+      display: grid;
+      place-items: center;
+      flex: none
+    }
+
+    .stat .ic svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--solid);
+      fill: none;
+      stroke-width: 1.8
+    }
+
+    .stat .v {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .stat .k {
+      font-size: 10px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      margin-top: 2px
+    }
+
+    /* ── Mission Stepper ─────────────────────────────── */
+    .mission-stepper {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px 8px 14px;
+      margin: 12px 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06), 0 4px 12px rgba(0, 0, 0, .04);
+      position: relative;
+    }
+
+    .mission-stepper__title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #8a8a8a;
+      margin: 0 0 16px 4px;
+      text-align: center;
+    }
+
+    .mission-stepper__track {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    /* línea conectora de fondo */
+    .mission-stepper__track::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 24px;
+      right: 24px;
+      height: 3px;
+      background: #e6e6e6;
+      border-radius: 2px;
+      z-index: 0;
+    }
+
+    /* progreso de la línea (se controla con clase en el track) */
+    .mission-stepper__track::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 24px;
+      height: 3px;
+      background: #2e7d32;
+      border-radius: 2px;
+      z-index: 1;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* anchos de progreso por estado */
+    .mission-stepper__track--p0::after {
+      width: 0;
+    }
+
+    .mission-stepper__track--p1::after {
+      width: calc(33.33% - 16px);
+    }
+
+    .mission-stepper__track--p2::after {
+      width: calc(66.66% - 8px);
+    }
+
+    .mission-stepper__track--p3::after {
+      width: calc(100% - 48px);
+    }
+
+    /* step individual */
+    .mission-stepper__step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* círculo */
+    .mission-stepper__dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      transition: all .35s ease;
+      flex-shrink: 0;
+    }
+
+    /* estados del círculo */
+    .mission-stepper__dot--pending {
+      background: #ececec;
+      color: #aaa;
+    }
+
+    .mission-stepper__dot--active {
+      background: #2e7d32;
+      color: #fff;
+      box-shadow: 0 0 0 5px rgba(46, 125, 50, .18);
+      animation: stepper-pulse 2s ease-in-out infinite;
+    }
+
+    .mission-stepper__dot--done {
+      background: #2e7d32;
+      color: #fff;
+    }
+
+    /* check SVG dentro del dot done */
+    .mission-stepper__dot--done svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* etiqueta */
+    .mission-stepper__label {
+      font-size: 10.5px;
+      line-height: 1.3;
+      text-align: center;
+      color: #aaa;
+      max-width: 72px;
+      transition: color .3s ease;
+    }
+
+    .mission-stepper__label--active {
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .mission-stepper__label--done {
+      color: #444;
+      font-weight: 600;
+    }
+
+    @keyframes stepper-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 5px rgba(46, 125, 50, .18);
+      }
+
+      50% {
+        box-shadow: 0 0 0 9px rgba(46, 125, 50, .08);
+      }
+    }
+  

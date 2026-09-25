@@ -1,0 +1,55 @@
+/* ============================================================
+   layout.css — estructura: el telefono, la pantalla desplazable
+   y los dos modos de visualizacion (app / lamina).
+   ============================================================ */
+
+    .phone {
+      width: 348px;
+      height: 740px;
+      background: var(--bg);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px
+    }
+
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      padding: 0 0 132px;
+      scrollbar-width: none
+    }
+
+    .screen::-webkit-scrollbar {
+      display: none
+    }
+
+/* ===== modo LAMINA: varias pantallas en fila (vista de diseno) ===== */
+body.modo-lamina {
+  flex-wrap: wrap;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* ===== modo APP: una sola pantalla centrada, navegable ===== */
+body.modo-app {
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+body.modo-app .phone {
+  margin: 0 auto;
+}
+
+/* el area desplazable reserva sitio para el panel inferior, medido por JS */
+.screen {
+  padding-bottom: var(--sheet-h, 132px);
+}

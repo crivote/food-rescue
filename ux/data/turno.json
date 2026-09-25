@@ -1,0 +1,62 @@
+{
+  "voluntario": {
+    "alias": "Juana España",
+    "capacidad": 30,
+    "turno": [
+      1170,
+      1290
+    ]
+  },
+  "puntos_base": 260,
+  "objetivo_turno": 50,
+  "misiones": [
+    {
+      "orden": 1,
+      "t": 1170,
+      "recogida": "r32",
+      "centro": "c5",
+      "raciones": 18,
+      "caduca_min": 1197,
+      "km_ida": 0.84,
+      "min_ida": 4,
+      "km_vuelta": 1.58,
+      "min_vuelta": 7
+    },
+    {
+      "orden": 2,
+      "t": 1185,
+      "recogida": "r15",
+      "centro": "c5",
+      "raciones": 18,
+      "caduca_min": 1211,
+      "km_ida": 0.76,
+      "min_ida": 3,
+      "km_vuelta": 0.76,
+      "min_vuelta": 3
+    },
+    {
+      "orden": 3,
+      "t": 1195,
+      "recogida": "r27",
+      "centro": "c5",
+      "raciones": 18,
+      "caduca_min": 1211,
+      "km_ida": 2.69,
+      "min_ida": 12,
+      "km_vuelta": 2.69,
+      "min_vuelta": 12
+    },
+    {
+      "orden": 4,
+      "t": 1220,
+      "recogida": "r24",
+      "centro": "c3",
+      "raciones": 20,
+      "caduca_min": 1258,
+      "km_ida": 7.68,
+      "min_ida": 35,
+      "km_vuelta": 7.03,
+      "min_vuelta": 32
+    }
+  ]
+}

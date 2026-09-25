@@ -1,0 +1,41 @@
+/* ============================================================
+   tokens.css — variables de diseno y normalizacion
+   Paleta crema/verde del mockup v5. Es el unico sitio donde se
+   definen colores: los demas ficheros solo usan var(--...).
+   ============================================================ */
+    :root {
+      --solid: #1F7A4D;
+      --tint: #D9F2E0;
+      --tint2: #B7E4C7;
+      --progress: #74C69D;
+      --line: #CBD8CF;
+      --ink: #26332C;
+      --ink-soft: #6B7A70;
+      --amber: #C2872E;
+      --blue: #7FB3D3;
+      --danger: #B4533A;
+      --heart: #E2574C;
+      --muted: #ECE7DF;
+      --bg: #FBF7EF;
+      --card: #fff;
+      --r: 20px;
+      --shadow: 0 8px 24px rgba(31, 60, 40, .06);
+      --sheet-shadow: 0 -14px 38px rgba(31, 60, 40, .16);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: #efe9df;
+      color: var(--ink);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      padding: 34px;
+      -webkit-font-smoothing: antialiased
+    }
