@@ -282,9 +282,8 @@ imágenes generadas, no fotografías reales.
   secuencial (el booster ya usa sus propios hilos internos), así que los
   benchmarks finales se corrieron aquí a propósito.
 - **ASUS TUF Gaming FA506IV** (AMD Ryzen 7, 16 GB, **RTX 2060 mobile** 6 GB) —
-  Windows/Linux: aquí corrieron **ComfyUI** (las ilustraciones) y el **batch
-  pesado de 600 semillas** del etiquetado CP-SAT, por tener más núcleos que el
-  N100.
+  Linux: aquí corrieron **ComfyUI** (las ilustraciones) y el **batch pesado de
+  600 semillas** del etiquetado CP-SAT, por tener más núcleos que el N100.
 
 > **Qué no usamos.** Ningún servicio de IA en el bucle de decisión, ninguna API
 > en tiempo real y ningún dato real de personas u organizaciones. El solver que
