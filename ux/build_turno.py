@@ -94,6 +94,9 @@ def construir(registro, esc, voluntario):
     return {
         "voluntario": {
             "alias": ALIAS,
+            # La foto es PRESENTACION, no dato del motor: el alias y este
+            # campo son lo unico de este bloque que no sale de la traza.
+            "foto": "assets/juana-espana.webp",
             "capacidad": vol["capacidad"],
             "turno": [vol["desde_min"], vol["hasta_min"]],
         },

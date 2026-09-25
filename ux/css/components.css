@@ -58,7 +58,20 @@
       flex: none;
       font-weight: 800;
       font-size: 14px;
-      color: var(--solid)
+      color: var(--solid);
+      /* recorta el retrato en circulo; tambien vale para la inicial */
+      overflow: hidden
+    }
+
+    /* El retrato se recorta al circulo. object-position sube ligeramente el
+       encuadre: a 34px la cara tiene que quedar centrada, y el original
+       esta tomado algo bajo. */
+    .ava img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 42%;
+      display: block
     }
 
     .kebab {

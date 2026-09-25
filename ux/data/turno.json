@@ -1,6 +1,7 @@
 {
   "voluntario": {
     "alias": "Juana España",
+    "foto": "assets/juana-espana.webp",
     "capacidad": 30,
     "turno": [
       1170,

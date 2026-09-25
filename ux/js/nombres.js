@@ -18,7 +18,8 @@ const COMERCIOS = {
          foto: "supermercado-huerto" },
   r15: { nombre: "Panadería La Espiga",      direccion: "Calle del Molino 8",
          foto: "panaderia-espiga" },
-  r27: { nombre: "Frutería El Vergel",       direccion: "Avenida de los Olivos 45" },
+  r27: { nombre: "Frutería El Vergel",       direccion: "Avenida de los Olivos 45",
+         foto: "fruteria-vergel" },
   r24: { nombre: "Restaurante La Mesa",      direccion: "Calle de la Fuente 3" },
   r25: { nombre: "Mercado de la Ribera",     direccion: "Paseo del Río 30" },
   r09: { nombre: "Panificadora Central",     direccion: "Calle Norte 17" },
@@ -27,7 +28,9 @@ const COMERCIOS = {
 /* Centros donde se entrega la comida. Nombres ficticios. */
 const CENTROS = {
   c5: { nombre: "Comedor La Concordia",  direccion: "Calle de la Concordia 21" },
-  c3: { nombre: "Centro Vecinal Arboleda", direccion: "Avenida del Parque 7" },
+  /* c3 es un CENTRO de entrega del escenario (destino con capacidad de
+     almacenaje), no un comercio: el nombre tiene que sonar a destino grande. */
+  c3: { nombre: "Banco de Alimentos · Nave Norte", direccion: "Polígono Arboleda, nave 7" },
 };
 
 const NOMBRES = { ...COMERCIOS, ...CENTROS };

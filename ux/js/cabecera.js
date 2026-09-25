@@ -26,11 +26,16 @@ export function cabecera(est) {
   const p = puntos(est);
   const nv = etiquetaNivel(est);
   const inicial = (est.voluntario.alias || "V").trim().charAt(0).toUpperCase();
+  /* Si hay retrato se muestra; si no, la inicial. La inicial NO es un
+     apaño: es la degradacion correcta si la foto no carga. */
+  const retrato = est.voluntario.foto
+    ? `<img src="${est.voluntario.foto}" alt="" width="224" height="224">`
+    : inicial;
   return `
   <header class="head">
     <span><img src="assets/logo_trans.png" width="70" alt="nextfood"></span>
     <span class="spacer"></span>
-    <span class="ava">${inicial}</span>
+    <span class="ava">${retrato}</span>
     <div class="kebab">
       <button aria-haspopup="true" aria-expanded="false" aria-label="Más opciones">${ico("i-dots")}</button>
       <div class="menu" role="menu">

@@ -31,7 +31,11 @@ Es la pregunta importante, así que va primero y sin rodeos.
 - **Los nombres de los comercios y de los centros de entrega** (*Supermercado El
   Huerto*, *Comedor La Concordia*...), y sus direcciones. Los puntos del escenario son
   identificadores internos (`r32`, `c5`); para que la pantalla sea legible se les da un
-  nombre inventado.
+  nombre inventado. **Importante:** un punto `c` es siempre **destino** en el modelo
+  (`recogidas` y `centros` son las dos únicas clases de punto, y el centro es el que
+  tiene capacidad de almacenaje), así que su nombre tiene que sonar a destino que
+  recibe, no a comercio que entrega. Por eso *c3* es un **banco de alimentos**, no un
+  centro vecinal: el nombre viejo contradecía el papel del punto en el turno.
 - **El nombre de la voluntaria**: *Juana España*, siguiendo la convención de los
   documentos de identidad de muestra.
 - **El plano del trayecto**: es una **ilustración generada**, no una proyección del
@@ -44,6 +48,15 @@ Es la pregunta importante, así que va primero y sin rodeos.
   función de «así reconocerás el sitio al llegar». El nombre del fichero es el del
   **local inventado**, nunca el identificador del escenario, para que el repositorio
   público no revele la nomenclatura interna.
+- **El retrato de la voluntaria**: también es una imagen generada, no una persona real.
+
+### Qué punto tiene foto y cuál no
+
+Hay foto de **3 de los 4 puntos de recogida** (supermercado, panadería, frutería) y de
+ninguno de los dos destinos: los locales donde se recoge son sitios a los que el
+voluntario llega y tiene que reconocer, mientras que los destinos ya se identifican por
+su nombre. **El cuarto punto, el restaurante, no tiene foto todavía**: en su lugar no se
+pinta nada — un hueco ausente es mejor que una imagen rota o una de relleno.
 
 ### Por qué esta separación
 
