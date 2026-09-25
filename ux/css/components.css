@@ -907,17 +907,29 @@
 
     .stats {
       display: flex;
-      gap: 10px
+      gap: 8px
     }
 
+    /* Icono ARRIBA del dato, no al lado: con tres recuadros el ancho de
+       la columna de texto se queda en ~40px y "1 h 56 min" se parte en
+       cuatro lineas. En columna el texto dispone de todo el recuadro. */
     .stat {
       flex: 1;
+      min-width: 0;
       display: flex;
-      align-items: center;
-      gap: 9px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
       border: 1.3px solid var(--line);
       border-radius: 13px;
-      padding: 9px 11px
+      padding: 9px 10px
+    }
+
+    /* El span que envuelve el texto tiene que ocupar TODO el recuadro:
+       si se encoge, la etiqueta se parte en seis lineas de 10px. */
+    .stat > span:not(.ic) {
+      width: 100%;
+      min-width: 0
     }
 
     .stat .ic {
@@ -939,16 +951,17 @@
     }
 
     .stat .v {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 800;
-      line-height: 1
+      line-height: 1.15
     }
 
     .stat .k {
       font-size: 10px;
       color: var(--ink-soft);
       font-weight: 600;
-      margin-top: 2px
+      line-height: 1.2;
+      margin-top: 1px
     }
 
     /* ── Mission Stepper ─────────────────────────────── */

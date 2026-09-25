@@ -7,6 +7,7 @@
    ============================================================ */
 
 import { puntosPor, nivelDe, subeDeNivel, progresoNivel } from "./gamificacion.js";
+import { ETAPA, avanceReloj } from "./tiempo.js";
 
 /** Fases de una mision, en orden. */
 export const FASE = {
@@ -89,9 +90,36 @@ export function confirmarEntrega(est) {
   return n;
 }
 
-/** Minuto del reloj correspondiente a la mision actual. */
-export function ahora(est) {
-  return est.mision.t;
+/**
+ * Etapa del reloj segun la fase del flujo. Al aceptar la mision aun no
+ * se ha salido, asi que el reloj se queda en la hora de asignacion; a
+ * partir de ahi avanza con los tramos.
+ */
+export function etapaDe(est) {
+  switch (est.fase) {
+    case FASE.CAMINO:   return ETAPA.CAMINO;
+    case FASE.RECOGIDA: return ETAPA.RECOGIDA;
+    case FASE.ENTREGA:  return ETAPA.ENTREGA;
+    case FASE.CIERRE:
+    case FASE.EXITO:    return ETAPA.CIERRE;
+    default:            return ETAPA.ASIGNADA;
+  }
+}
+
+/**
+ * Minuto del reloj correspondiente al momento actual del turno. NO es
+ * la hora de asignacion de la mision: es esa hora mas lo que el
+ * voluntario lleva andado DENTRO de la mision en curso.
+ */
+export function minutoTurno(est) {
+  return avanceReloj(est.mision, etapaDe(est));
+}
+
+/** Minutos de camino de las misiones ya cerradas. */
+export function caminoAcumulado(est) {
+  return est.turno.misiones
+    .slice(0, est.indice)
+    .reduce((s, m) => s + m.min_ida + m.min_vuelta, 0);
 }
 
 /** Resumen del turno para la pantalla final. */

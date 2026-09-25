@@ -7,16 +7,25 @@
    sitio y NO tape los botones (defecto del mockup).
    ============================================================ */
 
-import { hhmm, duracion, fraccion } from "./tiempo.js";
-import { puntos, entregadas, nivel } from "./estado.js";
+import { hhmm, duracion, fraccion, recorridoHasta } from "./tiempo.js";
+import { puntos, entregadas, nivel, minutoTurno, caminoAcumulado, etapaDe } from "./estado.js";
 
 function ico(id) {
   return `<svg><use href="#${id}"/></svg>`;
 }
 
+/* Minutos de camino que el voluntario lleva ya a sus espaldas: los
+   tramos de las misiones cerradas mas el recorrido de la que tiene
+   entre manos. Sale de la misma funcion que el reloj, asi que los dos
+   numeros no pueden contar cosas distintas. Es tiempo que ha dedicado,
+   no tiempo que le queda, y por eso no baja nunca. */
+function minutosDeCamino(est) {
+  return caminoAcumulado(est) + recorridoHasta(etapaDe(est), est.mision);
+}
+
 export function panelHTML(est) {
   const [ini, fin] = est.voluntario.turno;
-  const min = est.mision.t;
+  const min = minutoTurno(est);
   const pct = Math.round(fraccion(min, ini, fin) * 100);
   return `<div class="sheet">
     <div class="grip-zone" role="button" tabindex="0" aria-expanded="false" aria-label="Mostrar u ocultar panel del turno">
@@ -33,6 +42,8 @@ export function panelHTML(est) {
           <span><span class="v">${entregadas(est)}</span><br><span class="k"> raciones salvadas</span></span></div>
         <div class="stat"><span class="ic">${ico("i-clock")}</span>
           <span><span class="v">${duracion(fin - min)}</span><br><span class="k">de turno restante</span></span></div>
+        <div class="stat"><span class="ic">${ico("i-road")}</span>
+          <span><span class="v">${minutosDeCamino(est)} min</span><br><span class="k">en camino</span></span></div>
       </div>
     </div>
   </div>`;

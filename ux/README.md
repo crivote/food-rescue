@@ -155,6 +155,16 @@ Estas son las que costaron una vuelta, y por qué quedaron así:
 - **El plano es ilustrativo, los números no.** El fondo es una ilustración generada y las
   chinchetas están colocadas de forma verosímil, no proyectadas desde las coordenadas
   reales. Un plano realista de Madrid situaría comercios inventados en calles reales.
+- **El reloj del turno avanza paso a paso.** La hora de cada misión (`t` en los datos)
+  es la de su **salida**, un valor fijo: si el panel se quedara ahí, el turno restante y
+  la barra temporal solo se moverían al cerrar cada entrega. Con los minutos de cada
+  tramo —que ya vienen en los datos— el reloj avanza al llegar al comercio y al llegar
+  al centro, así que el voluntario ve su tiempo restante bajar mientras trabaja. Se
+  cuenta **solo el recorrido**, sin inventar minutos de carga o descarga: la traza real
+  deja 1 min de holgura entre la misión 3 y la 4, y cualquier margen añadido al alza
+  haría que una misión arrancase antes de que cerrase la anterior. Verificado sobre el
+  turno completo: el reloj no retrocede nunca y cierra a las 21:27, con los 108 min de
+  camino de la traza real.
 - **Puntos y nivel se derivan, no se acumulan.** `estado.js` los calcula de las raciones
   entregadas, así que no pueden desincronizarse del contador.
 - **Los niveles son neutros en género** (*Primeros pasos*, *Colaboración*,

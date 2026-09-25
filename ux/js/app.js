@@ -10,7 +10,7 @@
 
 import { cargarTurno } from "./data.js";
 import { nuevoEstado, FASE, siguienteMision, confirmarEntrega,
-         haySiguienteMision, puntos } from "./estado.js";
+         haySiguienteMision, puntos, minutoTurno } from "./estado.js";
 import { pantallaActual } from "./pantallas.js";
 import { barraEstado, cabecera } from "./cabecera.js";
 import { panelHTML, initPanel, initMenu } from "./panel.js";
@@ -18,7 +18,6 @@ import { panelHTML, initPanel, initMenu } from "./panel.js";
 /* ---------- montaje de una pantalla dentro de un .phone ---------- */
 
 function montar(phone, est, extra = {}) {
-  const min = est.mision.t;
   const screen = phone.querySelector(".screen");
   screen.innerHTML = pantallaActual(est, extra);
 
@@ -28,7 +27,10 @@ function montar(phone, est, extra = {}) {
   phone.querySelector(".head")?.remove();
   phone.querySelector(".sheet")?.remove();
 
-  phone.insertAdjacentHTML("afterbegin", cabecera(est) + barraEstado(min));
+  /* La barra de estado del movil usa la MISMA hora que el panel del
+     turno: si mostrara la hora real del sistema, en la maqueta
+     convivirian dos relojes distintos y se leeria como un descuido. */
+  phone.insertAdjacentHTML("afterbegin", cabecera(est) + barraEstado(minutoTurno(est)));
   phone.insertAdjacentHTML("beforeend", panelHTML(est));
   initPanel(phone);
 }
