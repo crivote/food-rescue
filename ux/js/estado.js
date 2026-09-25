@@ -29,6 +29,7 @@ export function nuevoEstado(turno) {
     puntosBase: turno.puntos_base,
     cargadas: null,                  // raciones confirmadas al recoger
     aceptadas: null,                 // raciones que se quedan en el centro
+    cerrado: false,                  // el turno ya se ha terminado
     mision: turno.misiones[0],
   };
 }
@@ -57,8 +58,13 @@ export function haSubidoDeNivel(est) {
                      puntos(est));
 }
 
+/**
+ * Raciones de la mision en curso. MISMA cadena de respaldo que
+ * `confirmarEntrega`, para que el "antes" y el "despues" que compara
+ * `haSubidoDeNivel` se refieran a la misma cantidad.
+ */
 function entregadasMisionActual(est) {
-  return est.aceptadas ?? est.cargadas ?? 0;
+  return est.aceptadas ?? est.cargadas ?? est.mision.raciones;
 }
 
 export function haySiguienteMision(est) {
@@ -74,6 +80,17 @@ export function siguienteMision(est) {
   est.cargadas = null;
   est.aceptadas = null;
   return true;
+}
+
+/**
+ * Cierra el turno: la ultima entrega ya se confirmo y no queda ninguna
+ * mision. Marca el estado en vez de tocar el boton a mano, porque el
+ * siguiente repintado rehace el marcado y cualquier cambio hecho sobre
+ * el nodo viejo se pierde (el clic parecia no hacer nada).
+ */
+export function cerrarTurno(est) {
+  est.cerrado = true;
+  est.fase = FASE.EXITO;
 }
 
 /**

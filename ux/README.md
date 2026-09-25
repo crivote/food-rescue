@@ -167,6 +167,14 @@ Estas son las que costaron una vuelta, y por qué quedaron así:
   camino de la traza real.
 - **Puntos y nivel se derivan, no se acumulan.** `estado.js` los calcula de las raciones
   entregadas, así que no pueden desincronizarse del contador.
+- **La pantalla final también deriva.** `pantallaExito` saca las raciones de esta entrega
+  y la subida de nivel del propio estado, no de parámetros. Cuando los recibía por
+  parámetro, el repintado del último paso los perdía y la pantalla que cierra el turno
+  salía con «undefined raciones» y «+NaN pts» —justo la última que ve quien evalúa—. La
+  comparación de nivel se calcula además con la tabla real de niveles: con un umbral fijo
+  de 900 puntos no se celebraba pasar de *Colaboración* a *Voluntariado*. Se añadió
+  `cerrarTurno()` porque el repintado sustituye el nodo del botón: marcar `disabled` a
+  mano se deshacía y el clic parecía no hacer nada.
 - **Los niveles son neutros en género** (*Primeros pasos*, *Colaboración*,
   *Voluntariado*, *Rescate*, *Líder de turno*) porque la interfaz no debe presuponer
   quién la usa.

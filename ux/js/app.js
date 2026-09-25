@@ -10,7 +10,7 @@
 
 import { cargarTurno } from "./data.js";
 import { nuevoEstado, FASE, siguienteMision, confirmarEntrega,
-         haySiguienteMision, puntos, minutoTurno } from "./estado.js";
+         cerrarTurno, haySiguienteMision, minutoTurno } from "./estado.js";
 import { pantallaActual } from "./pantallas.js";
 import { barraEstado, cabecera } from "./cabecera.js";
 import { panelHTML, initPanel, initMenu } from "./panel.js";
@@ -96,19 +96,19 @@ async function modoApp() {
       est.fase = FASE.CIERRE;
       pintar();
     } else if (/^Confirmo la entrega/.test(txt)) {
-      const antes = puntos(est);
-      const n = confirmarEntrega(est);
-      const despues = puntos(est);
-      pintar({ racionesEntregadas: n, subeNivel: Math.floor(despues / 900) > Math.floor(antes / 900) });
+      /* La pantalla de exito deriva del estado las raciones entregadas y
+         la subida de nivel; no se le pasan por parametro. */
+      confirmarEntrega(est);
+      pintar();
     } else if (/^Siguiente misi/.test(txt) || /^Terminar mi turno/.test(txt)) {
       if (haySiguienteMision(est)) {
         siguienteMision(est);
-        pintar({});
       } else {
-        pintar({});
-        b.textContent = "Turno completado · ¡gracias!";
-        b.disabled = true;
+        /* No se toca el boton a mano: el repintado lo sustituye y el
+           cambio se perderia. El cierre vive en el estado. */
+        cerrarTurno(est);
       }
+      pintar({});
     }
   });
 
@@ -128,11 +128,12 @@ async function modoLamina() {
     { fase: FASE.RECOGIDA, extra: {} },
     { fase: FASE.ENTREGA,  extra: {} },
     { fase: FASE.CIERRE,   extra: {} },
-    { fase: FASE.EXITO,    extra: { racionesEntregadas: base.mision.raciones, subeNivel: false } },
+    { fase: FASE.EXITO,    extra: {} },
   ];
 
   for (const f of fases) {
     const est = { ...base, fase: f.fase, cargadas: null };
+    /* En la lamina la ultima pantalla muestra una entrega ya hecha. */
     if (f.fase === FASE.EXITO) est.racionesTurno = base.mision.raciones;
     const phone = document.createElement("section");
     phone.className = "phone";

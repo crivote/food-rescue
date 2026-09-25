@@ -15,7 +15,8 @@ import { nombreDe, direccionDe, fotoDe, esCentro } from "./nombres.js";
 import { hhmm } from "./tiempo.js";
 import { planoHTML, trayectoHTML } from "./mapa.js";
 import { puntosPor } from "./gamificacion.js";
-import { FASE, haySiguienteMision, resumenTurno, nivel } from "./estado.js";
+import { FASE, haySiguienteMision, resumenTurno, nivel,
+         haSubidoDeNivel } from "./estado.js";
 
 function ico(id) {
   return `<svg><use href="#${id}"/></svg>`;
@@ -241,10 +242,19 @@ function mermaHTML(est, entregadas) {
   return `<p class="sub" style="margin-top:7px">${frase}. El resto sí se aprovecha.</p>`;
 }
 
-export function pantallaExito(est, { racionesEntregadas, subeNivel }) {
+export function pantallaExito(est) {
   const m = est.mision;
   const r = resumenTurno(est);
   const nv = nivel(est);
+
+  /* Las raciones de ESTA entrega y la subida de nivel se DERIVAN del
+     estado, no se reciben por parametro. Recibirlos hacia que al
+     repintar la pantalla sin argumentos (al terminar el turno) saliera
+     "undefined raciones" y "+NaN pts"; y la subida de nivel se
+     calculaba con un umbral fijo de 900 pts, asi que cruzar de Nivel 2
+     a Nivel 3 no se celebraba. Derivados, no pueden desincronizarse. */
+  const racionesEntregadas = est.aceptadas ?? est.cargadas ?? m.raciones;
+  const subeNivel = haSubidoDeNivel(est);
 
   const logros = [];
   if (subeNivel) {
@@ -270,6 +280,17 @@ export function pantallaExito(est, { racionesEntregadas, subeNivel }) {
     ? "Siguiente misión"
     : "Terminar mi turno por hoy";
 
+  /* Turno cerrado: se agradece en vez de ofrecer un boton que ya no
+     lleva a ningun sitio. El resumen del dia sustituye al de la mision. */
+  const cierre = est.cerrado
+    ? `<div class="card">
+         <span class="eyebrow">Turno terminado</span>
+         <h2>¡Gracias por hoy!</h2>
+         <p>Has salvado <b>${r.raciones} raciones</b> en ${r.misiones} misiones y
+         estás en <b>${r.nivel.etiqueta}</b>.</p>
+       </div>`
+    : "";
+
   return `
     <div class="card succ" style="text-align:center">
       <div class="halo">${ico("i-check")}</div>
@@ -282,7 +303,8 @@ export function pantallaExito(est, { racionesEntregadas, subeNivel }) {
       ${mermaHTML(est, racionesEntregadas)}
       ${logros.join("")}
     </div>
-    ${acts({ icono: "i-arrow", texto: siguiente }, null)}`;
+    ${cierre}
+    ${est.cerrado ? "" : acts({ icono: "i-arrow", texto: siguiente }, null)}`;
 }
 
 /** Enrutador: la pantalla que toca segun la fase del estado. */
