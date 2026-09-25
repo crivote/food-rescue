@@ -22,6 +22,7 @@ import sys
 
 HARNESS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        "ai-for-good-72h-harness", "comida")
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HARNESS)
 from generar_escenario import generar  # noqa: E402
 from simulate import Simulador  # noqa: E402
@@ -175,7 +176,7 @@ def correr_scorer(esc, booster):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--planes", default="labels/planes.jsonl")
+    p.add_argument("--planes", default=os.path.join(RAIZ, "labels", "planes.jsonl"))
     p.add_argument("--max-seeds", type=int, default=100)
     p.add_argument("--salida-dir", default="/tmp/scorer_variantes")
     a = p.parse_args()

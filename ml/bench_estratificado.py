@@ -25,6 +25,7 @@ import sys
 
 HARNESS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        "ai-for-good-72h-harness", "comida")
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HARNESS)
 from generar_escenario import generar  # noqa: E402
 from simulate import Simulador  # noqa: E402
@@ -53,7 +54,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("n", type=int, nargs="?", default=1200)
     p.add_argument("ini", type=int, nargs="?", default=5001)
-    p.add_argument("--modelo", default="models/scorer_full.txt")
+    p.add_argument("--modelo", default=os.path.join(RAIZ, "models", "scorer_full.txt"))
     a = p.parse_args()
 
     semillas = _out_of_sample_range(a.ini, a.n)

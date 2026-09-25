@@ -21,6 +21,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "ai-for-good-72h-harness", "comida"))
 
@@ -34,7 +35,7 @@ def main():
     p.add_argument("--hasta", type=int, default=20399)
     p.add_argument("--tope", type=float, default=45.0,
                    help="max_seconds por escenario")
-    p.add_argument("--salida", default="labels/planes.jsonl")
+    p.add_argument("--salida", default=os.path.join(RAIZ, "labels", "planes.jsonl"))
     a = p.parse_args()
 
     out_dir = os.path.dirname(a.salida)

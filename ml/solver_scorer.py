@@ -126,7 +126,13 @@ def _decidir_scorer(estado):
     try:
         modelo = cargar_modelo()
     except Exception:
-        return []  # fallback: sin modelo no se decide nada
+        # cargar_modelo ya ha avisado por stderr y ha re-lanzado; aqui se
+        # degrada al motor determinista de forma EXPLICITA y ruidosa (nunca
+        # silenciosa: un fallback mudo falsearia la comparacion con el motor).
+        print("[solver_scorer] AVISO: sin modelo, este tic lo decide el motor "
+              "determinista (las cifras NO seran las del integrado).",
+              file=sys.stderr)
+        return []
 
     minuto = estado["minuto"]
     libres = [v for v in estado["voluntarios"]

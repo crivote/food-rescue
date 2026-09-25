@@ -45,7 +45,9 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("n", type=int, nargs="?", default=2000)
     p.add_argument("ini", type=int, nargs="?", default=5001)
-    p.add_argument("--modelo", default="models/scorer_full.txt")
+    # Ruta ABSOLUTA respecto a la raiz del repo (nunca al cwd): si es relativa,
+    # el benchmark mide el motor mientras el titulo dice "integrado".
+    p.add_argument("--modelo", default=os.path.join(RAIZ, "models", "scorer_full.txt"))
     a = p.parse_args()
 
     semillas = list(range(a.ini, a.ini + a.n))
