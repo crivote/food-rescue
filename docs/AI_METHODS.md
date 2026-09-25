@@ -418,8 +418,11 @@ trade-off: es una mejora "gratuita" en la cola con coste nulo en media.
 ### 10.4 Implementación y configuración
 
 El solucionador unificado está en `ml/solver_scorer.py`: `decidir(estado)`
-calcula la decisión del scorer y la del motor determinista en paralelo, y aplica
-el guardrail si se detecta el desacuerdo cap-30. El guardrail se puede
+calcula la decisión del scorer, y solo computa la del motor determinista de
+forma **condicional** —cuando el scorer ha mandado a un cap-30 a una recogida
+pequeña y queda una recogida grande pendiente, única situación en que el
+guardrail puede disparar— aplicando la regla si se detecta el desacuerdo
+cap-30. El guardrail se puede
 configurar o desactivar por variables de entorno:
 
 | Variable | Default | Efecto |

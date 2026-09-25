@@ -5,8 +5,11 @@
 > incorporaron tras medirlas empíricamente. El vocabulario es deliberadamente
 > neutro: se habla de "motor", "asignación", "recogidas", "voluntarios" y
 > "centros". El motor publicado (secciones 1–6) es puramente determinista
-> (reglas + optimización combinatoria); la sección 7 describe un plan de
-> aprendizaje automático *en curso*, todavía no integrado en el motor.
+> (reglas + optimización combinatoria). La sección 7 describe el método de IA
+> —aprendizaje por imitación del solucionador exacto— **ya implementado,
+> medido e integrado**: la entrega es un solucionador unificado
+> (`ml/solver_scorer.py`) que combina el scorer aprendido con un guardrail
+> determinista, y sobre el escenario publicado salva el 58.5% (sección 7.6).
 
 ---
 
@@ -590,8 +593,10 @@ métrica correcta para una salvaguarda):
   motor (57.4%→60.8% victorias).
 
 No es un trade-off: es una mejora "gratuita" de cola con coste nulo en media.
-Implementado en `ml/solver_scorer.py` (`decidir(estado)` calcula scorer y motor
-en paralelo y aplica la regla); configurable por `GUARDRAIL` / `GUARDRAIL_GRANDE`
+Implementado en `ml/solver_scorer.py` (`decidir(estado)` calcula el scorer; el
+motor se computa solo de forma **condicional** —cuando el scorer manda a un
+cap-30 a una recogida pequeña y queda una grande pendiente— y aplica la regla);
+configurable por `GUARDRAIL` / `GUARDRAIL_GRANDE`
 / `GUARDRAIL_PEQUENA`. Detalle completo en `AI_METHODS.md` §10.
 
 ### 7.6 El solucionador integrado sobre el escenario publicado
